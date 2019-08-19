@@ -1,12 +1,13 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.0)
 
 project (homekit)
 
 add_subdirectory(cJSON)
 add_subdirectory(libmdnsd)
 add_subdirectory(wolfssl)
+add_subdirectory(http-parser)
 
-include_directories(include cJSON libmdnsd wolfssl .)
+include_directories(include cJSON libmdnsd wolfssl http-parser .)
 
 set( SOURCES
     "src/json.c"
@@ -43,9 +44,9 @@ set(WOLFSSL_C_FLAGS
 )
 
 
-add_executable (homekit cJSON libmdnsd wolfssl ${SOURCES} )
+add_executable (homekit cJSON libmdnsd wolfssl http-parser ${SOURCES} )
 
-target_link_libraries(homekit cjson mdnsd wolfssl)
+target_link_libraries(homekit cjson mdnsd wolfssl http-parser)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
     ${WOLFSSL_C_FLAGS} \
@@ -54,5 +55,5 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
     -DHOMEKIT_DEBUG")
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
-    -lpthread -lhttp_parser")
+    -lpthread ")
 

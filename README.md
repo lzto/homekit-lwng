@@ -3,8 +3,7 @@
 - http-parser: https://github.com/nodejs/http-parser
 - cJSON: https://github.com/DaveGamble/cJSON.git
 - libevent: https://github.com/libevent/libevent
-- wolfssl: 
-./configure --enable-srp --enable-sha512 --enable-base64encode --enable-hkdf --enable-chacha --enable-poly1305 --enable-ed25519 --enable-curve25519
+- wolfssl: https://github.com/wolfSSL/wolfssl
 
 ## QR code pairing
 
