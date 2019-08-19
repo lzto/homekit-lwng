@@ -169,6 +169,43 @@ mdns_record_t *record(mdns_daemon_t *d, int shared, char *host,
 	return r;
 }
 
+static void record_received(const struct resource *r, void *data)
+{
+	char ipinput[INET_ADDRSTRLEN];
+
+	switch(r->type) {
+	case QTYPE_A:
+		inet_ntop(AF_INET, &(r->known.a.ip), ipinput, INET_ADDRSTRLEN);
+		DBG("Got %s: A %s->%s", r->name, r->known.a.name, ipinput);
+		break;
+
+	case QTYPE_NS:
+		DBG("Got %s: NS %s", r->name, r->known.ns.name);
+		break;
+
+	case QTYPE_CNAME:
+		DBG("Got %s: CNAME %s", r->name, r->known.cname.name);
+		break;
+
+	case QTYPE_PTR:
+		DBG("Got %s: PTR %s", r->name, r->known.ptr.name);
+		break;
+
+	case QTYPE_TXT:
+		DBG("Got %s: TXT %s", r->name, r->rdata);
+		break;
+
+	case QTYPE_SRV:
+		DBG("Got %s: SRV %d %d %d %s", r->name, r->known.srv.priority,
+		    r->known.srv.weight, r->known.srv.port, r->known.srv.name);
+		break;
+
+	default:
+		DBG("Got %s: unknown", r->name);
+
+	}
+}
+
 
 
 void* homekit_mdns_worker()
@@ -187,7 +224,7 @@ retry:
         sleep(1);
 	}
 	mdnsd_set_address(mdnsd, ina);
-	//mdnsd_register_receive_callback(mdnsd, record_received, NULL);
+	mdnsd_register_receive_callback(mdnsd, record_received, NULL);
 
 	sd = multicast_socket(ina, (unsigned char)ttl);
 	if (sd < 0) {
