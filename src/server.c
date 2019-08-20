@@ -3203,11 +3203,17 @@ static void homekit_run_server(homekit_server_t *server)
     DEBUG("Staring HTTP server");
 
     struct sockaddr_in serv_addr;
+    int flag = 1;
+
     server->listen_fd = socket(AF_INET, SOCK_STREAM, 0);
     memset(&serv_addr, '0', sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     serv_addr.sin_port = htons(PORT);
+
+    setsockopt(server->listen_fd, SOL_SOCKET, SO_REUSEPORT, &flag, sizeof(flag));
+    setsockopt(server->listen_fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
+
     bind(server->listen_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
     listen(server->listen_fd, 10);
 

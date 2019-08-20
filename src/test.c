@@ -24,8 +24,8 @@ void led_on_set(homekit_value_t value) {
         printf("Invalid value format: %d\n", value.format);
         return;
     }
-
     led_on = value.bool_value;
+    printf("led status=%d\n", led_on);
 }
 
 

@@ -83,9 +83,7 @@ static int multicast_socket(struct in_addr ina, unsigned char ttl)
     if (sd < 0)
         return -1;
 
-#ifdef SO_REUSEPORT
     setsockopt(sd, SOL_SOCKET, SO_REUSEPORT, &flag, sizeof(flag));
-#endif
     setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
 
     /* Double the size of the receive buffer (getsockopt() returns the double) */
