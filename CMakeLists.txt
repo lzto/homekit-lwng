@@ -52,8 +52,8 @@ target_link_libraries(homekit cjson mdnsd wolfssl http-parser)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
 ${WOLFSSL_C_FLAGS} \
 -std=c99 \
--D_GNU_SOURCE \
--DHOMEKIT_DEBUG")
+-D_GNU_SOURCE")
+#-DHOMEKIT_DEBUG")
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
 -lpthread ")

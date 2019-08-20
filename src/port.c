@@ -29,7 +29,6 @@
 
 uint32_t homekit_random() {
     static bool initialized = false;
-    printf("called homekit_random\n");
     if (initialized)
     {
         initialized = true;
@@ -39,7 +38,6 @@ uint32_t homekit_random() {
 }
 
 void homekit_random_fill(uint8_t *data, size_t size) {
-    printf("called homekit_random_fill\n");
     uint32_t x;
     for (int i=0; i<size; i+=sizeof(x)) {
         x = homekit_random();
@@ -219,7 +217,7 @@ void* homekit_mdns_worker()
     struct timeval tv = { 0 };
     char *iface = NULL;
 
-    printf("mdns worker started\n");
+    DEBUG("mdns worker started\n");
 
 retry:
     while (iface_init(iface, &ina)) {
@@ -277,14 +275,14 @@ retry:
         sleep(1);
         goto retry;
     }
-    printf("mdns worker quit\n");
+    DEBUG("mdns worker quit\n");
 }
 
 void homekit_mdns_configure_init(const char *instance_name, int port) {
     mdns_record_t *r;
     mdns_port = port;
 
-    printf("mDNS setup: Name=%s Port=%d\n",
+    DEBUG("mDNS setup: Name=%s Port=%d\n",
             instance_name, port);
 
     pthread_mutex_lock(&mutex_reload);
@@ -324,7 +322,7 @@ void homekit_mdns_add_txt(const char *key, const char *format, ...) {
     if (value_len && value_len < sizeof(value)-1) {
         xht_store(xht_h, key, strlen(key), value, strlen(value));
     }
-    printf("mDNS add txt: key=%s value=%s\n",
+    DEBUG("mDNS add txt: key=%s value=%s\n",
         key, value);
 }
 
@@ -338,7 +336,7 @@ void homekit_mdns_configure_finalize() {
     xht_h = NULL;
 
     pthread_mutex_unlock(&mutex_reload);
-    printf("mDNS done setup\n");
+    DEBUG("mDNS done setup\n");
 }
 
 void homekit_mdns_init() {

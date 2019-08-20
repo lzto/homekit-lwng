@@ -40,7 +40,7 @@
 #define PORT 5556
 
 #ifndef HOMEKIT_MAX_CLIENTS
-#define HOMEKIT_MAX_CLIENTS 16
+#define HOMEKIT_MAX_CLIENTS 128
 #endif
 
 struct _client_context_t;
