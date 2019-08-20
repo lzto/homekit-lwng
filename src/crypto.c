@@ -469,6 +469,7 @@ curve25519_key *crypto_curve25519_generate() {
         return NULL;
 
     WC_RNG rng;
+    wc_InitRng(&rng);
     int r = wc_curve25519_make_key(&rng, 32, key);
     if (r) {
         crypto_curve25519_free(key);
