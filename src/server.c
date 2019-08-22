@@ -544,13 +544,11 @@ void write_characteristic_json(json_stream *json, client_context_t *client, cons
         homekit_value_t v = value ? *value : ch->getter_ex ? ch->getter_ex(ch) : ch->value;
 
         if (v.is_null) {
-            printf("[v is null]\n");
             // json_string(json, "value"); json_null(json);
         } else if (v.format != ch->format) {
             ERROR("Characteristic value format is different from characteristic format %d,%d",
                     v.format, ch->format);
         } else {
-            printf("[OK]\n");
             switch(v.format) {
                 case homekit_format_bool: {
                     json_string(json, "value"); json_boolean(json, v.bool_value);
@@ -589,6 +587,8 @@ void write_characteristic_json(json_stream *json, client_context_t *client, cons
                             byte *encoded_tlv_data = malloc(encoded_tlv_size + 1);
                             base64_encode(tlv_data, tlv_size, encoded_tlv_data);
                             encoded_tlv_data[encoded_tlv_size] = 0;
+
+                            printf("encoded tlv data:%s\n", encoded_tlv_data);
 
                             json_string(json, (char*) encoded_tlv_data);
 

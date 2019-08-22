@@ -6,6 +6,8 @@
 #include <homekit/characteristics.h>
 #include <homekit/types.h>
 
+#include "color.h"
+
 extern int getaddr(char *iface, struct in_addr *ina);
 
 //device identify
@@ -67,11 +69,14 @@ homekit_value_t cam_supported_video_cfg_get(const homekit_characteristic_t *ch)
     //video codec configuration
     tlv_values_t *part1 = tlv_new();
 
-    //video codec type
+    //video codec type - 0 - H.264
     tlv_add_integer_value(part1, 1, sizeof(uint8_t), 0);
 
     //video codec parameters
     tlv_values_t* codec_parameters = tlv_new();
+    //Packetization mode
+    tlv_add_integer_value(codec_parameters, 3, sizeof(uint8_t), 0);
+
     //ProfileID
     //0 - constrained baseline profile
     //1 - main profile
@@ -85,9 +90,6 @@ homekit_value_t cam_supported_video_cfg_get(const homekit_characteristic_t *ch)
     tlv_add_integer_value(codec_parameters, 2, sizeof(uint8_t),  1);
     tlv_add_integer_value(codec_parameters, 2, sizeof(uint8_t),  2);
 
-    //Packetization mode
-    tlv_add_integer_value(codec_parameters, 3, sizeof(uint8_t), 0);
-
     //CVO Enabled - 0 - cvo not supported - 1 - cvo supported
     //tlv_add_integer_value(codec_parameters, 4, sizeof(uint8_t), 0);
 
@@ -97,50 +99,77 @@ homekit_value_t cam_supported_video_cfg_get(const homekit_characteristic_t *ch)
     tlv_add_tlv_value(part1, 2, codec_parameters);
 
     //video attributes
-    tlv_values_t* video_attribute = tlv_new();
+    //width, height, fps
+    int resolutions[9][3] = {
+        {1280, 720, 30},
+        {1024, 768, 30},
+        {640, 480, 30},
+        {640, 360, 30},
+        {480, 360, 30},
+        {480, 270, 30},
+        {320, 240, 30},
+        {320, 240, 15}, // Apple Watch requires this configuration
+        {320, 180, 30}
+    };
+    for (int i=0;i<9;i++)
+    {
+        tlv_values_t* video_attribute = tlv_new();
 
-    //image width, height, framerate
-    tlv_add_integer_value(video_attribute, 1, 2*sizeof(uint8_t), 640);
-    tlv_add_integer_value(video_attribute, 2, 2*sizeof(uint8_t), 360);
-    tlv_add_integer_value(video_attribute, 3, sizeof(uint8_t), 30);
+        //image width, height, framerate
+        tlv_add_integer_value(video_attribute, 1, 2*sizeof(uint8_t), resolutions[i][0]);
+        tlv_add_integer_value(video_attribute, 2, 2*sizeof(uint8_t), resolutions[i][1]);
+        tlv_add_integer_value(video_attribute, 3, sizeof(uint8_t), resolutions[i][2]);
 
-    tlv_add_tlv_value(part1, 3, video_attribute);
-
+        tlv_add_tlv_value(part1, 3, video_attribute);
+    }
     tlv_add_tlv_value(r, 1, part1);
 
     return HOMEKIT_TLV(r);
 }
 
 //supported audio stream configuration
+//OPUS-24 or AAC-ELD 16
 homekit_value_t cam_supported_audio_cfg_get(const homekit_characteristic_t *ch)
 {
     printf("cam_supported_audio_cfg_get\n");
     tlv_values_t * r = tlv_new();
 
-    //part 1
-    tlv_values_t * part1 = tlv_new();
+    //part 1 - audio codecs
     
-    //codec type
-    //2 - aac-eld
-    //3 - opus
-    //5 - amr
-    //6 - amr-wb
-    tlv_add_integer_value(part1, 1, 2*sizeof(uint8_t), 2);
+    //-------add opus-24 - 2 byte length is wrong???
+    tlv_values_t * codec_opus24 = tlv_new();
+    tlv_add_integer_value(codec_opus24, 1, 1*sizeof(uint8_t), 3);
 
     //codec param
-    tlv_values_t* codec_param = tlv_new();
-    //channel
-    tlv_add_integer_value(codec_param, 1, sizeof(uint8_t), 1);
-    //bit rate
-    tlv_add_integer_value(codec_param, 2, sizeof(uint8_t), 0);
-    //sample rate
-    tlv_add_integer_value(codec_param, 3, sizeof(uint8_t), 1);
-    //rtp time
-    tlv_add_integer_value(codec_param, 4, sizeof(uint8_t), 40);
+    tlv_values_t* codec_param_opus24 = tlv_new();
+    //channel - 1 channel
+    tlv_add_integer_value(codec_param_opus24, 1, sizeof(uint8_t), 1);
+    //bit rate - 0 variable bitrate
+    tlv_add_integer_value(codec_param_opus24, 2, sizeof(uint8_t), 0);
+    //sample rate - 2 - 24kHz
+    tlv_add_integer_value(codec_param_opus24, 3, sizeof(uint8_t), 2);
 
-    tlv_add_tlv_value(part1, 2, codec_param);
+    tlv_add_tlv_value(codec_opus24, 2, codec_param_opus24);
 
-    tlv_add_tlv_value(r, 1, part1);
+    tlv_add_tlv_value(r, 1, codec_opus24);
+
+    //-------add aac-eld-16 - 2 byte length is wrong???
+    tlv_values_t * codec_acceld16 = tlv_new();
+    tlv_add_integer_value(codec_acceld16, 1, 1*sizeof(uint8_t), 2);
+
+    //codec param
+    tlv_values_t* codec_param_aaceld16 = tlv_new();
+    //channel - 1 channel
+    tlv_add_integer_value(codec_param_aaceld16, 1, sizeof(uint8_t), 1);
+    //bit rate - 0 variable bitrate
+    tlv_add_integer_value(codec_param_aaceld16, 2, sizeof(uint8_t), 0);
+    //sample rate - 1 - 16kHz
+    tlv_add_integer_value(codec_param_aaceld16, 3, sizeof(uint8_t), 1);
+
+    tlv_add_tlv_value(codec_acceld16, 2, codec_param_aaceld16);
+
+    tlv_add_tlv_value(r, 1, codec_acceld16);
+
     //part 2 - comfort noise support - no support - 0
     tlv_add_integer_value(r, 2, sizeof(uint8_t), 0);
 
@@ -251,21 +280,6 @@ homekit_accessory_t *accessories[] = {
                     .primary=true,
                     .characteristics=(homekit_characteristic_t*[]){
                     HOMEKIT_CHARACTERISTIC(
-                            STREAMING_STATUS,
-                            .getter_ex=cam_status_get,
-                            .callback = HOMEKIT_CHARACTERISTIC_CALLBACK(cam_status_cb_fn)
-                            ),
-                    HOMEKIT_CHARACTERISTIC(
-                            SELECTED_RTPS_CONFIGURATION,
-                            .getter_ex=cam_selected_rtp_stream_cfg_get,
-                            .setter_ex=cam_selected_rtp_stream_cfg_set
-                            ),
-                    HOMEKIT_CHARACTERISTIC(
-                            SETUP_ENDPOINTS,
-                            .getter_ex=cam_setup_endpoints_get,
-                            .setter_ex=cam_setup_endpoints_set
-                            ),
-                    HOMEKIT_CHARACTERISTIC(
                             SUPPORTED_VIDEO_STREAM_CONFIGURATION,
                             .getter_ex=cam_supported_video_cfg_get
                             ),
@@ -276,6 +290,21 @@ homekit_accessory_t *accessories[] = {
                     HOMEKIT_CHARACTERISTIC(
                             SUPPORTED_RTP_CONFIGURATION,
                             .getter_ex=cam_supported_rtp_cfg_get
+                            ),
+                    HOMEKIT_CHARACTERISTIC(
+                            SELECTED_RTPS_CONFIGURATION,
+                            .getter_ex=cam_selected_rtp_stream_cfg_get,
+                            .setter_ex=cam_selected_rtp_stream_cfg_set
+                            ),
+                    HOMEKIT_CHARACTERISTIC(
+                            STREAMING_STATUS,
+                            .getter_ex=cam_status_get,
+                            .callback = HOMEKIT_CHARACTERISTIC_CALLBACK(cam_status_cb_fn)
+                            ),
+                    HOMEKIT_CHARACTERISTIC(
+                            SETUP_ENDPOINTS,
+                            .getter_ex=cam_setup_endpoints_get,
+                            .setter_ex=cam_setup_endpoints_set
                             ),
                     NULL
                     }),
