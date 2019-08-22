@@ -89,7 +89,7 @@ end1:
 bool store_cfg(cJSON* lwng_json)
 {
     char* string = cJSON_Print(lwng_json);
-    printf("store CFG:%s\n", string);
+    //printf("store CFG:%s\n", string);
     //write to file
     FILE* cfg = fopen(CFG,"w");
     if (!cfg)
@@ -138,7 +138,7 @@ fail1:
 
 bool append_array_property(const uint8_t* k, const uint8_t* v, size_t vlen)
 {
-    printf("append_array_property %s=%s\n", k, v);
+    //printf("append_array_property %s=%s\n", k, v);
     bool ret = false;
     cJSON* lwng_json = load_cfg();
     if (!lwng_json)

@@ -33,4 +33,6 @@ int tlv_format(const tlv_values_t *values, byte *buffer, size_t *size);
 
 int tlv_parse(const byte *buffer, size_t length, tlv_values_t *values);
 
+void tlv_debug(const tlv_values_t *values);
+
 #endif // __TLV_H__

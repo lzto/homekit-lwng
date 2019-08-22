@@ -445,6 +445,30 @@
  */
 #define HOMEKIT_SERVICE_CAMERA_RTP_STREAM_MANAGEMENT HOMEKIT_APPLE_UUID3("110")
 
+
+#if 0
+from: ./homebridge/node_modules/hap-nodejs/lib/gen/HomeKitTypes-Bridge.js
+ 73   Service.call(this, displayName, '00000111-0000-1000-8000-0026BB765291', subtype);
+ 74
+ 75   // Required Characteristics
+ 76   this.addCharacteristic(Characteristic.On);
+ 77
+ 78   // Optional Characteristics
+ 79   this.addOptionalCharacteristic(Characteristic.CurrentHorizontalTiltAngle);
+ 80   this.addOptionalCharacteristic(Characteristic.CurrentVerticalTiltAngle);
+ 81   this.addOptionalCharacteristic(Characteristic.TargetHorizontalTiltAngle);
+ 82   this.addOptionalCharacteristic(Characteristic.TargetVerticalTiltAngle);
+ 83   this.addOptionalCharacteristic(Characteristic.NightVision);
+ 84   this.addOptionalCharacteristic(Characteristic.OpticalZoom);
+ 85   this.addOptionalCharacteristic(Characteristic.DigitalZoom);
+ 86   this.addOptionalCharacteristic(Characteristic.ImageRotation);
+ 87   this.addOptionalCharacteristic(Characteristic.ImageMirroring);
+ 88   this.addOptionalCharacteristic(Characteristic.Name);
+#endif
+
+#define HOMEKIT_SERVICE_CAMERA_CONTROL HOMEKIT_APPLE_UUID3("111")
+
+
 /**
  Defines that the accessory contains a microphone. This is mostly used for video doorbells and cameras and may not work standalone.
  
@@ -1677,6 +1701,16 @@
     }, \
     .value = HOMEKIT_UINT8_(_value), \
     ##__VA_ARGS__
+
+#define HOMEKIT_CHARACTERISTIC_SELECTED_RTPS_CONFIGURATION HOMEKIT_APPLE_UUID3("117")
+#define HOMEKIT_DECLARE_CHARACTERISTIC_SELECTED_RTPS_CONFIGURATION(...) \
+    .type = HOMEKIT_CHARACTERISTIC_SELECTED_RTPS_CONFIGURATION, \
+    .description = "Selected RTP Stream Configuration", \
+    .format = homekit_format_tlv, \
+    .permissions = homekit_permissions_paired_read \
+                 | homekit_permissions_paired_write, \
+    ##__VA_ARGS__
+
 
 #define HOMEKIT_CHARACTERISTIC_STREAMING_STATUS HOMEKIT_APPLE_UUID3("120")
 #define HOMEKIT_DECLARE_CHARACTERISTIC_STREAMING_STATUS(...) \

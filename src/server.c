@@ -9,6 +9,11 @@
 
 #include <sys/select.h>
 #include <sys/queue.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include <fcntl.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -535,13 +540,17 @@ void write_characteristic_json(json_stream *json, client_context_t *client, cons
     }
 
     if (ch->permissions & homekit_permissions_paired_read) {
+        printf("Getting %s,%s  ", ch->type, ch->description);
         homekit_value_t v = value ? *value : ch->getter_ex ? ch->getter_ex(ch) : ch->value;
 
         if (v.is_null) {
+            printf("[v is null]\n");
             // json_string(json, "value"); json_null(json);
         } else if (v.format != ch->format) {
-            ERROR("Characteristic value format is different from characteristic format");
+            ERROR("Characteristic value format is different from characteristic format %d,%d",
+                    v.format, ch->format);
         } else {
+            printf("[OK]\n");
             switch(v.format) {
                 case homekit_format_bool: {
                     json_string(json, "value"); json_boolean(json, v.bool_value);
@@ -2818,7 +2827,45 @@ void homekit_server_on_resource(client_context_t *context) {
         return;
     }
 
-    context->server->config->on_resource(context->body, context->body_length);
+    uint8_t* path = context->server->config->on_resource(context->body, context->body_length);
+
+    //do mmap
+    struct stat sb;
+    int fd = open(path, O_RDONLY);
+    if (fd == -1)
+    {
+        printf("can not open %s\n", path);
+        goto end;
+    }
+
+    if (fstat(fd, &sb) == -1)           /* To obtain file size */
+    {
+        printf("can not fstat %s\n", path);
+        goto end1;
+    }
+
+    uint8_t* fmap = mmap(NULL, sb.st_size , PROT_READ, MAP_PRIVATE, fd, 0);
+    if (fmap == MAP_FAILED)
+    {
+        printf("can not mmap %s\n", path);
+        goto end1;
+    }
+    
+    uint8_t* http_headers = malloc(1024);
+    int header_len = snprintf(http_headers, 1024,
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: image/jpeg\r\n"
+            "Content-Length: %d\r\n"
+            "Connection: keep-alive\r\n\r\n", sb.st_size);
+
+    client_send(context, http_headers, header_len);
+    client_send(context, fmap, sb.st_size);
+
+    munmap(fmap, sb.st_size);
+end1:
+    close(fd);
+end:
+    return;
 }
 
 
