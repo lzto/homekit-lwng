@@ -36,6 +36,7 @@
 #include "json.h"
 #include "debug.h"
 #include "port.h"
+#include "color.h"
 
 #include <homekit/homekit.h>
 #include <homekit/characteristics.h>
@@ -540,7 +541,7 @@ void write_characteristic_json(json_stream *json, client_context_t *client, cons
     }
 
     if (ch->permissions & homekit_permissions_paired_read) {
-        printf("Getting %s,%s  ", ch->type, ch->description);
+        printf(ANSI_COLOR(BG_BLACK, FG_GREEN) "Getting %s,%s" ANSI_COLOR_RESET "\n", ch->type, ch->description);
         homekit_value_t v = value ? *value : ch->getter_ex ? ch->getter_ex(ch) : ch->value;
 
         if (v.is_null) {
@@ -588,7 +589,8 @@ void write_characteristic_json(json_stream *json, client_context_t *client, cons
                             base64_encode(tlv_data, tlv_size, encoded_tlv_data);
                             encoded_tlv_data[encoded_tlv_size] = 0;
 
-                            printf("encoded tlv data:%s\n", encoded_tlv_data);
+                            //printf(ANSI_COLOR(BG_BLACK, FG_RED) "encoded tlv data:%s" ANSI_COLOR_RESET "\n",
+                            //        encoded_tlv_data);
 
                             json_string(json, (char*) encoded_tlv_data);
 
@@ -2162,6 +2164,7 @@ void homekit_server_on_get_characteristics(client_context_t *context) {
 }
 
 void homekit_server_on_update_characteristics(client_context_t *context, const byte *data, size_t size) {
+    //printf(ANSI_COLOR(BG_WHITE,FG_RED) "Update Characteristics" ANSI_COLOR_RESET "\n");
     CLIENT_INFO(context, "Update Characteristics");
     DEBUG_HEAP();
 
@@ -2974,6 +2977,10 @@ int homekit_server_on_message_complete(http_parser *parser) {
             DEBUG("Unknown endpoint");
             send_404_response(context);
             break;
+        }
+        default:
+        {
+            ERROR("unhandled endpoint request %d\n", context->endpoint);
         }
     }
 

@@ -292,7 +292,7 @@ homekit_accessory_t *accessories[] = {
                             .getter_ex=cam_supported_rtp_cfg_get
                             ),
                     HOMEKIT_CHARACTERISTIC(
-                            SELECTED_RTPS_CONFIGURATION,
+                            SELECTED_RTP_STREAM_CONFIGURATION,
                             .getter_ex=cam_selected_rtp_stream_cfg_get,
                             .setter_ex=cam_selected_rtp_stream_cfg_set
                             ),

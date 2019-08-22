@@ -1736,9 +1736,9 @@ from: ./homebridge/node_modules/hap-nodejs/lib/gen/HomeKitTypes-Bridge.js
     .permissions = homekit_permissions_paired_read, \
     ##__VA_ARGS__
 
-#define HOMEKIT_CHARACTERISTIC_SELECTED_RTPS_CONFIGURATION HOMEKIT_APPLE_UUID3("117")
-#define HOMEKIT_DECLARE_CHARACTERISTIC_SELECTED_RTPS_CONFIGURATION(...) \
-    .type = HOMEKIT_CHARACTERISTIC_SELECTED_RTPS_CONFIGURATION, \
+#define HOMEKIT_CHARACTERISTIC_SELECTED_RTP_STREAM_CONFIGURATION HOMEKIT_APPLE_UUID3("117")
+#define HOMEKIT_DECLARE_CHARACTERISTIC_SELECTED_RTP_STREAM_CONFIGURATION(...) \
+    .type = HOMEKIT_CHARACTERISTIC_SELECTED_RTP_STREAM_CONFIGURATION, \
     .description = "Selected RTP Stream Configuration", \
     .format = homekit_format_tlv, \
     .permissions = homekit_permissions_paired_read \
@@ -1749,15 +1749,6 @@ from: ./homebridge/node_modules/hap-nodejs/lib/gen/HomeKitTypes-Bridge.js
 #define HOMEKIT_DECLARE_CHARACTERISTIC_SETUP_ENDPOINTS(...) \
     .type = HOMEKIT_CHARACTERISTIC_SETUP_ENDPOINTS, \
     .description = "Setup Endpoints", \
-    .format = homekit_format_tlv, \
-    .permissions = homekit_permissions_paired_read \
-                 | homekit_permissions_paired_write, \
-    ##__VA_ARGS__
-
-#define HOMEKIT_CHARACTERISTIC_SELECTED_RTP_STREAM_CONFIGURATION HOMEKIT_APPLE_UUID3("117")
-#define HOMEKIT_DECLARE_CHARACTERISTIC_SELECTED_RTP_STREAM_CONFIGURATION(...) \
-    .type = HOMEKIT_CHARACTERISTIC_SELECTED_RTP_STREAM_CONFIGURATION, \
-    .description = "Selected RTP Stream Configuration", \
     .format = homekit_format_tlv, \
     .permissions = homekit_permissions_paired_read \
                  | homekit_permissions_paired_write, \
