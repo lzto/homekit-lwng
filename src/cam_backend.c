@@ -85,7 +85,7 @@ static char* ffmpeg_args[] = {
 };
 
 #define FF_SRTP_URL_TEMPLATE \
-    "srtp://%d:%d?"\
+    "srtp://%s:%d?"\
     "rtcpport=%d&localrtcpport=%d&pkt_size=1378"
 
 void cam_start()
