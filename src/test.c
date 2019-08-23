@@ -39,7 +39,8 @@ homekit_value_t cam_status_get(const homekit_characteristic_t *ch)
 {
     printf("cam_status_get\n");
     tlv_values_t *r = tlv_new();
-    tlv_add_integer_value(r, 1, sizeof(uint8_t), cam_status());
+    //0 for available
+    tlv_add_integer_value(r, 1, sizeof(uint8_t), 0);
     //tlv_add_string_value(r, 1, "0");
     return HOMEKIT_TLV(r);
 }
@@ -73,6 +74,7 @@ void cam_selected_rtp_stream_cfg_set(homekit_characteristic_t *ch, const homekit
     {
         case 0:
             printf("request end streaming session\n");
+            cam_kill();
             break;
         case 1:
             printf("request start streaming session\n");
@@ -230,9 +232,10 @@ homekit_value_t cam_setup_endpoints_get(const homekit_characteristic_t *ch)
 
     tlv_values_t * r = tlv_new();
 
-    if (v==NULL)
+    if (cam_status()==CAM_UNINITIALIZED)
     {
         //read request before setup
+        printf("Called cam_setup_endpoints_get before set\n");
         tlv_add_integer_value(r, 2, sizeof(uint8_t), 2);
         return HOMEKIT_TLV(r);
     }
@@ -270,10 +273,10 @@ homekit_value_t cam_setup_endpoints_get(const homekit_characteristic_t *ch)
     tlv_add_value(r, 5, asrtp->value, asrtp->size);
 
     //Video SSRC
-    tlv_add_integer_value(r, 6, 4*sizeof(uint8_t), 0);
+    tlv_add_integer_value(r, 6, 4*sizeof(uint8_t), cam_get_vssrc());
 
     //Audio SSRC
-    tlv_add_integer_value(r, 6, 4*sizeof(uint8_t), 0);
+    tlv_add_integer_value(r, 6, 4*sizeof(uint8_t), cam_get_assrc());
 
     printf("respond with :");
     tlv_debug(r);
@@ -291,7 +294,7 @@ void cam_setup_endpoints_set(homekit_characteristic_t *ch, const homekit_value_t
 
     //tlv_debug(value.tlv_values);
 
-    //cam_prepare();
+    cam_prepare();
 }
 
 
