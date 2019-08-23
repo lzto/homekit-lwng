@@ -91,6 +91,7 @@ void cam_selected_rtp_stream_cfg_set(homekit_characteristic_t *ch, const homekit
         default:
             printf("unknown rtp stream command:%d\n", command);
     }
+    tlv_free(session_control_and_command);
 }
 
 //supported video stream configuration
@@ -248,21 +249,25 @@ homekit_value_t cam_setup_endpoints_get(const homekit_characteristic_t *ch)
     //status ,0 - success, 1 - busy, 2 - error
     tlv_add_integer_value(r, 2, sizeof(uint8_t), 0);
     
-    //Accessory address - use IPv4 address port 8081
+    //Accessory address - use IPv4 address
     tlv_values_t* address = tlv_new();
     //0-IPv4 - 1-IPv6
     tlv_add_integer_value(address, 1, sizeof(uint8_t), 0);
-    //IP address
+    //IP address - FIXME!!!
+#if 0
     struct in_addr ina;
     memset(&ina, 0, sizeof(ina));
     getaddr(NULL, &ina);
     char ipstr[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(ina.s_addr), ipstr, INET_ADDRSTRLEN);
     tlv_add_string_value(address, 2, ipstr);
+#else
+    tlv_add_string_value(address, 2, cam_get_ip());
+#endif
     //video rtp port
-    tlv_add_integer_value(address, 3, 2*sizeof(uint8_t), 8081);
+    tlv_add_integer_value(address, 3, 2*sizeof(uint8_t), cam_get_vrtp_port());
     //audio rtp port
-    tlv_add_integer_value(address, 4, 2*sizeof(uint8_t), 8081);
+    tlv_add_integer_value(address, 4, 2*sizeof(uint8_t), cam_get_artp_port());
     tlv_add_tlv_value(r, 3, address);
 
     //Video SRTP
@@ -293,8 +298,14 @@ void cam_setup_endpoints_set(homekit_characteristic_t *ch, const homekit_value_t
     homekit_value_copy(&(ch->value), &value);
 
     //tlv_debug(value.tlv_values);
+    tlv_values_t* controller_addr = tlv_get_tlv_value(value.tlv_values, 3);
+    tlv_debug(controller_addr);
+    uint8_t *cam_ip = tlv_get_value(controller_addr, 2)->value;
+    uint16_t vrtp_port = tlv_get_integer_value(controller_addr, 3, 0x0000);
+    uint16_t artp_port = tlv_get_integer_value(controller_addr, 4, 0x0000);
 
-    cam_prepare();
+    cam_prepare(artp_port, vrtp_port, cam_ip);
+    tlv_free(controller_addr);
 }
 
 
