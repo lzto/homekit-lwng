@@ -65,7 +65,30 @@ void cam_selected_rtp_stream_cfg_set(homekit_characteristic_t *ch, const homekit
             "TODO: cam_selected_rtp_stream_cfg_set"
             ANSI_COLOR_RESET "\n");
     homekit_value_copy(&(ch->value), &value);
-    tlv_debug(value.tlv_values);
+    //tlv_debug(value.tlv_values);
+    tlv_values_t* session_control_and_command = tlv_get_tlv_value(value.tlv_values, 1);
+    //tlv_debug(session_control_and_command);
+    int command = tlv_get_integer_value(session_control_and_command, 2, -1);
+    switch(command)
+    {
+        case 0:
+            printf("request end streaming session\n");
+            break;
+        case 1:
+            printf("request start streaming session\n");
+            break;
+        case 2:
+            printf("request suspend streaming session\n");
+            break;
+        case 3:
+            printf("request resume streaming session\n");
+            break;
+        case 4:
+            printf("request reconfigure streaming session\n");
+            break;
+        default:
+            printf("unknown rtp stream command:%d\n", command);
+    }
 }
 
 //supported video stream configuration
@@ -266,7 +289,7 @@ void cam_setup_endpoints_set(homekit_characteristic_t *ch, const homekit_value_t
 
     homekit_value_copy(&(ch->value), &value);
 
-    tlv_debug(value.tlv_values);
+    //tlv_debug(value.tlv_values);
 
     //cam_prepare();
 }
