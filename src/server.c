@@ -531,7 +531,7 @@ void write_characteristic_json(json_stream *json, client_context_t *client, cons
     }
 
     if (ch->permissions & homekit_permissions_paired_read) {
-        printf(ANSI_COLOR(BG_BLACK, FG_GREEN) "Getting %s,%s" ANSI_COLOR_RESET "\n", ch->type, ch->description);
+        //printf(ANSI_COLOR(BG_BLACK, FG_GREEN) "Getting %s,%s" ANSI_COLOR_RESET "\n", ch->type, ch->description);
         homekit_value_t v = value ? *value : ch->getter_ex ? ch->getter_ex(ch) : ch->value;
 
         if (v.is_null) {

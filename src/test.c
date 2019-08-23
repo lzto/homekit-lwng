@@ -304,8 +304,19 @@ void cam_setup_endpoints_set(homekit_characteristic_t *ch, const homekit_value_t
     uint16_t vrtp_port = tlv_get_integer_value(controller_addr, 3, 0x0000);
     uint16_t artp_port = tlv_get_integer_value(controller_addr, 4, 0x0000);
 
-    cam_prepare(artp_port, vrtp_port, controller_ip);
+    //Video SRTP
+    tlv_values_t* vsrtp = tlv_get_tlv_value(value.tlv_values, 4);
+
+    //Audio SRTP
+    tlv_values_t* asrtp = tlv_get_tlv_value(value.tlv_values, 5);
+
+    cam_prepare(artp_port, vrtp_port, controller_ip,
+            tlv_get_value(vsrtp,2)->value, tlv_get_value(vsrtp,3)->value,
+            tlv_get_value(asrtp,2)->value, tlv_get_value(asrtp,3)->value);
+
     tlv_free(controller_addr);
+    tlv_free(vsrtp);
+    tlv_free(asrtp);
 }
 
 
