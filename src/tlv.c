@@ -1,8 +1,10 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
-#include <homekit/tlv.h>
-
+#include "homekit/tlv.h"
+#include "debug.h"
 
 tlv_values_t *tlv_new() {
     tlv_values_t *values = malloc(sizeof(tlv_values_t));
@@ -220,3 +222,14 @@ int tlv_parse(const byte *buffer, size_t length, tlv_values_t *values) {
 
     return 0;
 }
+
+void tlv_debug(const tlv_values_t *values) {
+    printf("Got following TLV values:\n");
+    for (tlv_t *t=values->head; t; t=t->next) {
+        char *escaped_payload = binary_to_string(t->value, t->size);
+        printf("  Type %d value (%d bytes): %s\n", t->type, t->size, escaped_payload);
+        free(escaped_payload);
+    }
+}
+
+

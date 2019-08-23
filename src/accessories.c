@@ -47,7 +47,7 @@ bool homekit_value_equal(homekit_value_t *a, homekit_value_t *b) {
     return false;
 }
 
-void homekit_value_copy(homekit_value_t *dst, homekit_value_t *src) {
+void homekit_value_copy(homekit_value_t *dst, const homekit_value_t *src) {
     memset(dst, 0, sizeof(*dst));
 
     dst->format = src->format;
@@ -99,7 +99,7 @@ void homekit_value_copy(homekit_value_t *dst, homekit_value_t *src) {
 }
 
 
-homekit_value_t *homekit_value_clone(homekit_value_t *value) {
+homekit_value_t *homekit_value_clone(const homekit_value_t *value) {
     homekit_value_t *copy = malloc(sizeof(homekit_value_t));
     homekit_value_copy(copy, value);
     return copy;

@@ -216,16 +216,6 @@ void server_free(homekit_server_t *server) {
 #define CLIENT_ERROR(client, message, ...)
 #endif
 
-void tlv_debug(const tlv_values_t *values) {
-    DEBUG("Got following TLV values:");
-    for (tlv_t *t=values->head; t; t=t->next) {
-        char *escaped_payload = binary_to_string(t->value, t->size);
-        DEBUG("Type %d value (%d bytes): %s", t->type, t->size, escaped_payload);
-        free(escaped_payload);
-    }
-}
-
-
 typedef enum {
     TLVType_Method = 0,        // (integer) Method to use for pairing. See PairMethod
     TLVType_Identifier = 1,    // (UTF-8) Identifier for authentication

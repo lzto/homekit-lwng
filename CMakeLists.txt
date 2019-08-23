@@ -22,6 +22,7 @@ set( SOURCES
     "src/server.c"
     "src/crypto.c"
     "src/addr.c"
+    "src/cam_backend.c"
     "src/test.c"
     )
 
@@ -52,7 +53,7 @@ target_link_libraries(homekit cjson mdnsd wolfssl http-parser)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
 ${WOLFSSL_C_FLAGS} \
 -std=c99 \
--D_GNU_SOURCE")
+-D_GNU_SOURCE -g")
 #-DHOMEKIT_DEBUG")
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
