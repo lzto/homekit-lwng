@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <signal.h>
 
 #include <homekit/homekit.h>
 #include <homekit/characteristics.h>
@@ -401,6 +402,8 @@ homekit_server_config_t config = {
 
 int main()
 {
+    signal(SIGCHLD, SIG_IGN);
+    cam_backend_init();
     homekit_server_init(&config);
     return 0;
 }

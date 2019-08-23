@@ -103,6 +103,15 @@ void cam_start()
                 FF_SRTP_URL_TEMPLATE,
                 "0.0.0.0",
                 vrtp_port,vrtp_port,vrtp_port);
+        printf("%s ", ffmpeg_cmd_path);
+        char** aps = ffmpeg_args;
+        int i=0;
+        while (aps[i]!=NULL)
+        {
+            printf("%s ",aps[i]);
+            i++;
+        }
+        printf("\n");
         execv(ffmpeg_cmd_path, ffmpeg_args);
         fprintf(stderr,"error!\n");
         exit(0);
