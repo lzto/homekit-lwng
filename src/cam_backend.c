@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <pthread.h>
 
@@ -17,7 +18,7 @@ static uint32_t assrc;
 static uint32_t vssrc;
 static uint16_t vrtp_port;
 static uint16_t artp_port;
-static uint8_t cam_ip[16];
+static uint8_t controller_ip[16];
 
 void cam_backend_init()
 {
@@ -28,17 +29,23 @@ void cam_backend_init()
 void cam_prepare(uint16_t _artp_port, uint16_t _vrtp_port, uint8_t* _ip)
 {
     printf("cam_prepare: %s rtp ports: a,%d v,%d\n", _ip, _artp_port, _vrtp_port);
-    strncpy(cam_ip, _ip, 16);
+    strncpy(controller_ip, _ip, 16);
     artp_port = _artp_port;
     vrtp_port = _vrtp_port;
-    vssrc = homekit_random();
-    assrc = homekit_random();
+    vssrc = homekit_random() & 0x00FFFFFF;
+    assrc = homekit_random() & 0x00FFFFFF;
 
+    printf("vssrc=%u, assrc=%u\n", vssrc, assrc);
+
+    _cam_status = CAM_INITIALIZED;
+}
+
+void cam_start()
+{
     //cam_pid = fork();
     //if (!cam_pid)
     //  exec();
     //set flag
-    _cam_status = CAM_INITIALIZED;
 }
 
 void cam_kill()
@@ -75,6 +82,6 @@ uint16_t cam_get_artp_port()
 
 uint8_t* cam_get_ip()
 {
-    return cam_ip;
+    return controller_ip;
 }
 

@@ -6,6 +6,7 @@
 
 void cam_backend_init();
 void cam_prepare(uint16_t _artp_port, uint16_t _vrtp_port, uint8_t* _ip);
+void cam_start();
 void cam_kill();
 uint8_t cam_status();
 uint8_t* cam_get_ip();

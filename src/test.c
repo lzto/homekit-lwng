@@ -37,7 +37,7 @@ enum {
 
 homekit_value_t cam_status_get(const homekit_characteristic_t *ch)
 {
-    printf("cam_status_get\n");
+    //printf("cam_status_get\n");
     tlv_values_t *r = tlv_new();
     //0 for available
     tlv_add_integer_value(r, 1, sizeof(uint8_t), 0);
@@ -78,6 +78,7 @@ void cam_selected_rtp_stream_cfg_set(homekit_characteristic_t *ch, const homekit
             break;
         case 1:
             printf("request start streaming session\n");
+            cam_start();
             break;
         case 2:
             printf("request suspend streaming session\n");
@@ -97,7 +98,7 @@ void cam_selected_rtp_stream_cfg_set(homekit_characteristic_t *ch, const homekit
 //supported video stream configuration
 homekit_value_t cam_supported_video_cfg_get(const homekit_characteristic_t *ch)
 {
-    printf("cam_supported_video_cfg_get\n");
+    //printf("cam_supported_video_cfg_get\n");
     tlv_values_t * r = tlv_new();
 
     //video codec configuration
@@ -165,7 +166,7 @@ homekit_value_t cam_supported_video_cfg_get(const homekit_characteristic_t *ch)
 //OPUS-24 or AAC-ELD 16
 homekit_value_t cam_supported_audio_cfg_get(const homekit_characteristic_t *ch)
 {
-    printf("cam_supported_audio_cfg_get\n");
+    //printf("cam_supported_audio_cfg_get\n");
     tlv_values_t * r = tlv_new();
 
     //part 1 - audio codecs
@@ -213,7 +214,7 @@ homekit_value_t cam_supported_audio_cfg_get(const homekit_characteristic_t *ch)
 //supported rtp configuration
 homekit_value_t cam_supported_rtp_cfg_get(const homekit_characteristic_t *ch)
 {
-    printf("cam_supported_rtp_cfg_get\n");
+    //printf("cam_supported_rtp_cfg_get\n");
     tlv_values_t * r = tlv_new();
     //support AES_CM_128_HMAC_SHA1_80
     tlv_add_integer_value(r, 2, sizeof(uint8_t), 0);
@@ -225,9 +226,9 @@ homekit_value_t cam_supported_rtp_cfg_get(const homekit_characteristic_t *ch)
 //cam setup endpoints
 homekit_value_t cam_setup_endpoints_get(const homekit_characteristic_t *ch)
 {
-    printf(ANSI_COLOR(BG_WHITE, FG_RED)
-            "cam_setup_endpoints_get"
-            ANSI_COLOR_RESET "\n");
+    //printf(ANSI_COLOR(BG_WHITE, FG_RED)
+    //        "cam_setup_endpoints_get"
+    //        ANSI_COLOR_RESET "\n");
 
     tlv_values_t* v = ch->value.tlv_values;
 
@@ -253,17 +254,13 @@ homekit_value_t cam_setup_endpoints_get(const homekit_characteristic_t *ch)
     tlv_values_t* address = tlv_new();
     //0-IPv4 - 1-IPv6
     tlv_add_integer_value(address, 1, sizeof(uint8_t), 0);
-    //IP address - FIXME!!!
-#if 0
+    //IP address
     struct in_addr ina;
     memset(&ina, 0, sizeof(ina));
     getaddr(NULL, &ina);
     char ipstr[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(ina.s_addr), ipstr, INET_ADDRSTRLEN);
     tlv_add_string_value(address, 2, ipstr);
-#else
-    tlv_add_string_value(address, 2, cam_get_ip());
-#endif
     //video rtp port
     tlv_add_integer_value(address, 3, 2*sizeof(uint8_t), cam_get_vrtp_port());
     //audio rtp port
@@ -271,20 +268,22 @@ homekit_value_t cam_setup_endpoints_get(const homekit_characteristic_t *ch)
     tlv_add_tlv_value(r, 3, address);
 
     //Video SRTP
-    tlv_t* vsrtp = tlv_get_value(v, 4);
-    tlv_add_value(r, 4, vsrtp->value, vsrtp->size);
+    tlv_values_t* vsrtp = tlv_get_tlv_value(v, 4);
+    tlv_add_tlv_value(r, 4, vsrtp);
+    tlv_free(vsrtp);
     //Audio SRTP
-    tlv_t* asrtp = tlv_get_value(v, 5);
-    tlv_add_value(r, 5, asrtp->value, asrtp->size);
+    tlv_values_t* asrtp = tlv_get_tlv_value(v, 5);
+    tlv_add_tlv_value(r, 5, asrtp);
+    tlv_free(asrtp);
 
     //Video SSRC
     tlv_add_integer_value(r, 6, 4*sizeof(uint8_t), cam_get_vssrc());
 
     //Audio SSRC
-    tlv_add_integer_value(r, 6, 4*sizeof(uint8_t), cam_get_assrc());
+    tlv_add_integer_value(r, 7, 4*sizeof(uint8_t), cam_get_assrc());
 
-    printf("respond with :");
-    tlv_debug(r);
+    //printf("respond with :");
+    //tlv_debug(r);
 
     return HOMEKIT_TLV(r);
 }
@@ -297,14 +296,15 @@ void cam_setup_endpoints_set(homekit_characteristic_t *ch, const homekit_value_t
 
     homekit_value_copy(&(ch->value), &value);
 
-    //tlv_debug(value.tlv_values);
+    tlv_debug(value.tlv_values);
+
     tlv_values_t* controller_addr = tlv_get_tlv_value(value.tlv_values, 3);
     tlv_debug(controller_addr);
-    uint8_t *cam_ip = tlv_get_value(controller_addr, 2)->value;
+    uint8_t *controller_ip = tlv_get_value(controller_addr, 2)->value;
     uint16_t vrtp_port = tlv_get_integer_value(controller_addr, 3, 0x0000);
     uint16_t artp_port = tlv_get_integer_value(controller_addr, 4, 0x0000);
 
-    cam_prepare(artp_port, vrtp_port, cam_ip);
+    cam_prepare(artp_port, vrtp_port, controller_ip);
     tlv_free(controller_addr);
 }
 
