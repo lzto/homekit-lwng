@@ -329,7 +329,7 @@ homekit_value_t pt_get() {
 
 void pt_set(homekit_value_t value) {
     printf("pantilt: l\n");
-    tlv_debug(value->tlv_values);
+    tlv_debug(value.tlv_values);
 }
 #endif
 
