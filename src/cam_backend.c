@@ -102,7 +102,7 @@ void cam_start()
         base64_encode((uint8_t*)&vsrtp,sizeof(struct srtp_cfg), _ff_vsrtp);
         snprintf(_ff_url, 1024,
                 FF_SRTP_URL_TEMPLATE,
-                "0.0.0.0",
+                controller_ip,
                 vrtp_port,vrtp_port,vrtp_port);
         printf("%s ", ffmpeg_cmd_path);
         char** aps = ffmpeg_args;
