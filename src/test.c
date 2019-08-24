@@ -297,10 +297,10 @@ void cam_setup_endpoints_set(homekit_characteristic_t *ch, const homekit_value_t
 
     homekit_value_copy(&(ch->value), &value);
 
-    tlv_debug(value.tlv_values);
+    //tlv_debug(value.tlv_values);
 
     tlv_values_t* controller_addr = tlv_get_tlv_value(value.tlv_values, 3);
-    tlv_debug(controller_addr);
+    //tlv_debug(controller_addr);
     uint8_t *controller_ip = tlv_get_value(controller_addr, 2)->value;
     uint16_t vrtp_port = tlv_get_integer_value(controller_addr, 3, 0x0000);
     uint16_t artp_port = tlv_get_integer_value(controller_addr, 4, 0x0000);
@@ -321,7 +321,7 @@ void cam_setup_endpoints_set(homekit_characteristic_t *ch, const homekit_value_t
 }
 
 
-#if 0
+#if 1
 homekit_value_t pt_get() {
     printf("pt_get\n");
     return HOMEKIT_BOOL(false);
@@ -329,6 +329,7 @@ homekit_value_t pt_get() {
 
 void pt_set(homekit_value_t value) {
     printf("pantilt: l\n");
+    tlv_debug(value->tlv_values);
 }
 #endif
 
@@ -345,7 +346,7 @@ homekit_accessory_t *accessories[] = {
                     HOMEKIT_CHARACTERISTIC(IDENTIFY, led_identify),
                     NULL
                     }),
-#if 0
+#if 1
             HOMEKIT_SERVICE(CAMERA_CONTROL, .primary=true, .characteristics=(homekit_characteristic_t*[]){
                     HOMEKIT_CHARACTERISTIC(NAME, "camera-control"),
                     HOMEKIT_CHARACTERISTIC(
