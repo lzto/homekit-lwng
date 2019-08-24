@@ -24,7 +24,13 @@ void led_identify(homekit_value_t _value) {
 uint8_t* handle_resource(const char *body, size_t body_size)
 {
     printf("handle resource : %s\n", body);
-    return "/tmp/1.jpeg\0";
+    uint8_t buffer[128];
+    int w,h;
+    sscanf(body, "{\"image-width\":%d,\"image-height\":%d,\"resource-type\":\"image\"}", &w, &h);
+    snprintf(buffer,128,
+            "/opt/vc/bin/raspistill -w %d -h %d -o /tmp/snapshot.jpg", w, h);
+    system(buffer);
+    return "/tmp/snapshot.jpg\0";
 }
 
 //streaming status
