@@ -98,6 +98,7 @@ void cam_start()
     if (cam_pid==0)
     {
         //I'm the child process
+        system("v4l2-ctl --set-ctrl video_bitrate=300000");
         snprintf(_ff_vssrc, 16, "%d", vssrc);
         base64_encode((uint8_t*)&vsrtp,sizeof(struct srtp_cfg), _ff_vsrtp);
         snprintf(_ff_url, 1024,
