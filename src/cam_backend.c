@@ -70,6 +70,7 @@ static char _ff_vsrtp[128];
 static char _ff_url[1024];
 
 static char* ffmpeg_args[] = {
+    ffmpeg_cmd_path,
     "-f", "video4linux2",
     "-input_format", "h264",
     "-video_size", _ff_video_size,
