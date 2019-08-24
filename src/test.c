@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <signal.h>
@@ -322,14 +323,33 @@ void cam_setup_endpoints_set(homekit_characteristic_t *ch, const homekit_value_t
 
 
 #if 1
-homekit_value_t pt_get() {
-    printf("pt_get\n");
+homekit_value_t pt_get_up() {
     return HOMEKIT_BOOL(false);
 }
-
-void pt_set(homekit_value_t value) {
-    printf("pantilt: l\n");
-    tlv_debug(value.tlv_values);
+void pt_set_up(homekit_value_t value) {
+    if (value.bool_value)
+        system("python /opt/bin/spt.py u");
+}
+homekit_value_t pt_get_down() {
+    return HOMEKIT_BOOL(false);
+}
+void pt_set_down(homekit_value_t value) {
+    if (value.bool_value)
+        system("python /opt/bin/spt.py d");
+}
+homekit_value_t pt_get_left() {
+    return HOMEKIT_BOOL(false);
+}
+void pt_set_left(homekit_value_t value) {
+    if (value.bool_value)
+        system("python /opt/bin/spt.py l");
+}
+homekit_value_t pt_get_right() {
+    return HOMEKIT_BOOL(false);
+}
+void pt_set_right(homekit_value_t value) {
+    if (value.bool_value)
+        system("python /opt/bin/spt.py r");
 }
 #endif
 
@@ -346,13 +366,50 @@ homekit_accessory_t *accessories[] = {
                     HOMEKIT_CHARACTERISTIC(IDENTIFY, led_identify),
                     NULL
                     }),
-#if 1
+#if 0
             HOMEKIT_SERVICE(CAMERA_CONTROL, .primary=true, .characteristics=(homekit_characteristic_t*[]){
                     HOMEKIT_CHARACTERISTIC(NAME, "camera-control"),
                     HOMEKIT_CHARACTERISTIC(
                             ON, false,
                             .getter=pt_get,
                             .setter=pt_set
+                            ),
+                    NULL
+                    }),
+#else
+            HOMEKIT_SERVICE(SWITCH, .primary=true, .characteristics=(homekit_characteristic_t*[]){
+                    HOMEKIT_CHARACTERISTIC(NAME, "up"),
+                    HOMEKIT_CHARACTERISTIC(
+                            ON, false,
+                            .getter=pt_get_up,
+                            .setter=pt_set_up
+                            ),
+                    NULL
+                    }),
+            HOMEKIT_SERVICE(SWITCH, .primary=true, .characteristics=(homekit_characteristic_t*[]){
+                    HOMEKIT_CHARACTERISTIC(NAME, "down"),
+                    HOMEKIT_CHARACTERISTIC(
+                            ON, false,
+                            .getter=pt_get_down,
+                            .setter=pt_set_down
+                            ),
+                    NULL
+                    }),
+            HOMEKIT_SERVICE(SWITCH, .primary=true, .characteristics=(homekit_characteristic_t*[]){
+                    HOMEKIT_CHARACTERISTIC(NAME, "left"),
+                    HOMEKIT_CHARACTERISTIC(
+                            ON, false,
+                            .getter=pt_get_left,
+                            .setter=pt_set_left
+                            ),
+                    NULL
+                    }),
+            HOMEKIT_SERVICE(SWITCH, .primary=true, .characteristics=(homekit_characteristic_t*[]){
+                    HOMEKIT_CHARACTERISTIC(NAME, "right"),
+                    HOMEKIT_CHARACTERISTIC(
+                            ON, false,
+                            .getter=pt_get_right,
+                            .setter=pt_set_right
                             ),
                     NULL
                     }),
