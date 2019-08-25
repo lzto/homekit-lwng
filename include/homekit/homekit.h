@@ -42,7 +42,7 @@ typedef struct {
 
     // Callback for "POST /resource" to get snapshot image from camera
     // return a path to a file that should be send back to the client
-    uint8_t* (*on_resource)(const char *body, size_t body_size);
+    char* (*on_resource)(const char *body, size_t body_size);
 
     void (*on_event)(homekit_event_t event);
 } homekit_server_config_t;

@@ -54,8 +54,8 @@ typedef struct _client_context_t client_context_t;
 
 
 #define HOMEKIT_NOTIFY_EVENT(server, event) \
-  if ((server)->config->on_event) \
-      (server)->config->on_event(event);
+    if ((server)->config->on_event) \
+(server)->config->on_event(event);
 
 
 typedef enum {
@@ -225,42 +225,42 @@ typedef enum {
     TLVType_EncryptedData = 5, // (bytes) Encrypted data with auth tag at end
     TLVType_State = 6,         // (integer) State of the pairing process. 1=M1, 2=M2, etc.
     TLVType_Error = 7,         // (integer) Error code. Must only be present if error code is
-                               // not 0. See TLVError
+    // not 0. See TLVError
     TLVType_RetryDelay = 8,    // (integer) Seconds to delay until retrying a setup code
     TLVType_Certificate = 9,   // (bytes) X.509 Certificate
     TLVType_Signature = 10,    // (bytes) Ed25519
     TLVType_Permissions = 11,  // (integer) Bit value describing permissions of the controller
-                               // being added.
-                               // None (0x00): Regular user
-                               // Bit 1 (0x01): Admin that is able to add and remove
-                               // pairings against the accessory
+    // being added.
+    // None (0x00): Regular user
+    // Bit 1 (0x01): Admin that is able to add and remove
+    // pairings against the accessory
     TLVType_FragmentData = 13, // (bytes) Non-last fragment of data. If length is 0,
-                               // it's an ACK.
+    // it's an ACK.
     TLVType_FragmentLast = 14, // (bytes) Last fragment of data
     TLVType_Separator = 0xff,
 } TLVType;
 
 
 typedef enum {
-  TLVMethod_PairSetup = 1,
-  TLVMethod_PairVerify = 2,
-  TLVMethod_AddPairing = 3,
-  TLVMethod_RemovePairing = 4,
-  TLVMethod_ListPairings = 5,
+    TLVMethod_PairSetup = 1,
+    TLVMethod_PairVerify = 2,
+    TLVMethod_AddPairing = 3,
+    TLVMethod_RemovePairing = 4,
+    TLVMethod_ListPairings = 5,
 } TLVMethod;
 
 
 typedef enum {
-  TLVError_Unknown = 1,         // Generic error to handle unexpected errors
-  TLVError_Authentication = 2,  // Setup code or signature verification failed
-  TLVError_Backoff = 3,         // Client must look at the retry delay TLV item and
-                                // wait that many seconds before retrying
-  TLVError_MaxPeers = 4,        // Server cannot accept any more pairings
-  TLVError_MaxTries = 5,        // Server reached its maximum number of
-                                // authentication attempts
-  TLVError_Unavailable = 6,     // Server pairing method is unavailable
-  TLVError_Busy = 7,            // Server is busy and cannot accept a pairing
-                                // request at this time
+    TLVError_Unknown = 1,         // Generic error to handle unexpected errors
+    TLVError_Authentication = 2,  // Setup code or signature verification failed
+    TLVError_Backoff = 3,         // Client must look at the retry delay TLV item and
+    // wait that many seconds before retrying
+    TLVError_MaxPeers = 4,        // Server cannot accept any more pairings
+    TLVError_MaxTries = 5,        // Server reached its maximum number of
+    // authentication attempts
+    TLVError_Unavailable = 6,     // Server pairing method is unavailable
+    TLVError_Busy = 7,            // Server is busy and cannot accept a pairing
+    // request at this time
 } TLVError;
 
 
@@ -542,57 +542,57 @@ void write_characteristic_json(json_stream *json, client_context_t *client, cons
         } else {
             switch(v.format) {
                 case homekit_format_bool: {
-                    json_string(json, "value"); json_boolean(json, v.bool_value);
-                    break;
-                }
+                                              json_string(json, "value"); json_boolean(json, v.bool_value);
+                                              break;
+                                          }
                 case homekit_format_uint8:
                 case homekit_format_uint16:
                 case homekit_format_uint32:
                 case homekit_format_uint64:
                 case homekit_format_int: {
-                    json_string(json, "value"); json_integer(json, v.int_value);
-                    break;
-                }
+                                             json_string(json, "value"); json_integer(json, v.int_value);
+                                             break;
+                                         }
                 case homekit_format_float: {
-                    json_string(json, "value"); json_float(json, v.float_value);
-                    break;
-                }
+                                               json_string(json, "value"); json_float(json, v.float_value);
+                                               break;
+                                           }
                 case homekit_format_string: {
-                    json_string(json, "value"); json_string(json, v.string_value);
-                    break;
-                }
+                                                json_string(json, "value"); json_string(json, v.string_value);
+                                                break;
+                                            }
                 case homekit_format_tlv: {
-                    json_string(json, "value");
-                    if (!v.tlv_values) {
-                        json_string(json, "");
-                    } else {
-                        size_t tlv_size = 0;
-                        tlv_format(v.tlv_values, NULL, &tlv_size);
-                        if (tlv_size == 0) {
-                            json_string(json, "");
-                        } else {
-                            byte *tlv_data = malloc(tlv_size);
-                            tlv_format(v.tlv_values, tlv_data, &tlv_size);
+                                             json_string(json, "value");
+                                             if (!v.tlv_values) {
+                                                 json_string(json, "");
+                                             } else {
+                                                 size_t tlv_size = 0;
+                                                 tlv_format(v.tlv_values, NULL, &tlv_size);
+                                                 if (tlv_size == 0) {
+                                                     json_string(json, "");
+                                                 } else {
+                                                     byte *tlv_data = malloc(tlv_size);
+                                                     tlv_format(v.tlv_values, tlv_data, &tlv_size);
 
-                            size_t encoded_tlv_size = base64_encoded_size(tlv_data, tlv_size);
-                            byte *encoded_tlv_data = malloc(encoded_tlv_size + 1);
-                            base64_encode(tlv_data, tlv_size, encoded_tlv_data);
-                            encoded_tlv_data[encoded_tlv_size] = 0;
+                                                     size_t encoded_tlv_size = base64_encoded_size(tlv_data, tlv_size);
+                                                     byte *encoded_tlv_data = malloc(encoded_tlv_size + 1);
+                                                     base64_encode(tlv_data, tlv_size, encoded_tlv_data);
+                                                     encoded_tlv_data[encoded_tlv_size] = 0;
 
-                            //printf(ANSI_COLOR(BG_BLACK, FG_RED) "encoded tlv data:%s" ANSI_COLOR_RESET "\n",
-                            //        encoded_tlv_data);
+                                                     //printf(ANSI_COLOR(BG_BLACK, FG_RED) "encoded tlv data:%s" ANSI_COLOR_RESET "\n",
+                                                     //        encoded_tlv_data);
 
-                            json_string(json, (char*) encoded_tlv_data);
+                                                     json_string(json, (char*) encoded_tlv_data);
 
-                            free(encoded_tlv_data);
-                            free(tlv_data);
-                        }
-                    }
-                    break;
-                }
+                                                     free(encoded_tlv_data);
+                                                     free(tlv_data);
+                                                 }
+                                             }
+                                             break;
+                                         }
                 case homekit_format_data:
-                    // TODO:
-                    break;
+                                         // TODO:
+                                         break;
             }
         }
 
@@ -605,9 +605,9 @@ void write_characteristic_json(json_stream *json, client_context_t *client, cons
 
 
 int client_send_encrypted(
-    client_context_t *context,
-    byte *payload, size_t size
-) {
+        client_context_t *context,
+        byte *payload, size_t size
+        ) {
     if (!context || !context->encrypted || !context->read_key)
         return -1;
 
@@ -635,10 +635,10 @@ int client_send_encrypted(
 
         size_t available = sizeof(encrypted) - 2;
         int r = crypto_chacha20poly1305_encrypt(
-            context->read_key, nonce, aead, 2,
-            payload+payload_offset, chunk_size,
-            encrypted+2, &available
-        );
+                context->read_key, nonce, aead, 2,
+                payload+payload_offset, chunk_size,
+                encrypted+2, &available
+                );
         if (r) {
             ERROR("Failed to chacha encrypt payload (code %d)", r);
             return -1;
@@ -654,10 +654,10 @@ int client_send_encrypted(
 
 
 int client_decrypt(
-    client_context_t *context,
-    byte *payload, size_t payload_size,
-    byte *decrypted, size_t *decrypted_size
-) {
+        client_context_t *context,
+        byte *payload, size_t payload_size,
+        byte *decrypted, size_t *decrypted_size
+        ) {
     if (!context || !context->encrypted || !context->write_key)
         return -1;
 
@@ -693,10 +693,10 @@ int client_decrypt(
 
         size_t decrypted_len = *decrypted_size - decrypted_offset;
         int r = crypto_chacha20poly1305_decrypt(
-            context->write_key, nonce, payload+payload_offset, 2,
-            payload+payload_offset+2, chunk_size + 16,
-            decrypted, &decrypted_len
-        );
+                context->write_key, nonce, payload+payload_offset, 2,
+                payload+payload_offset+2, chunk_size + 16,
+                decrypted, &decrypted_len
+                );
         if (r) {
             ERROR("Failed to chacha decrypt payload (code %d)", r);
             return -1;
@@ -723,12 +723,14 @@ void client_notify_characteristic(homekit_characteristic_t *ch, homekit_value_t 
     DEBUG("Got characteristic %d.%d change event", ch->service->accessory->id, ch->id);
 
     /*if (!client->event_queue) {
-        ERROR("Client has no event queue. Skipping notification");
-        return;
-    }*/
+      ERROR("Client has no event queue. Skipping notification");
+      return;
+      }*/
 
     characteristic_event_t *event = malloc(sizeof(characteristic_event_t));
     event->characteristic = ch;
+
+    homekit_value_destruct(&event->value);
     homekit_value_copy(&event->value, &value);
 
     DEBUG("Sending event to client %d", client->socket);
@@ -896,17 +898,17 @@ void send_tlv_response(client_context_t *context, tlv_values_t *values) {
 
 
 static byte json_200_response_headers[] =
-    "HTTP/1.1 200 OK\r\n"
-    "Content-Type: application/hap+json\r\n"
-    "Transfer-Encoding: chunked\r\n"
-    "Connection: keep-alive\r\n\r\n";
+"HTTP/1.1 200 OK\r\n"
+"Content-Type: application/hap+json\r\n"
+"Transfer-Encoding: chunked\r\n"
+"Connection: keep-alive\r\n\r\n";
 
 
 static byte json_207_response_headers[] =
-    "HTTP/1.1 207 Multi-Status\r\n"
-    "Content-Type: application/hap+json\r\n"
-    "Transfer-Encoding: chunked\r\n"
-    "Connection: keep-alive\r\n\r\n";
+"HTTP/1.1 207 Multi-Status\r\n"
+"Content-Type: application/hap+json\r\n"
+"Transfer-Encoding: chunked\r\n"
+"Connection: keep-alive\r\n\r\n";
 
 
 void send_json_response(client_context_t *context, int status_code, byte *payload, size_t payload_size) {
@@ -1034,496 +1036,496 @@ void homekit_server_on_pair_setup(client_context_t *context, const byte *data, s
 
     switch(tlv_get_integer_value(message, TLVType_State, -1)) {
         case 1: {
-            CLIENT_INFO(context, "Pair Setup Step 1/3");
-            DEBUG_HEAP();
-            if (context->server->paired) {
-                CLIENT_INFO(context, "Refusing to pair: already paired");
-                send_tlv_error_response(context, 2, TLVError_Unavailable);
-                break;
-            }
+                    CLIENT_INFO(context, "Pair Setup Step 1/3");
+                    DEBUG_HEAP();
+                    if (context->server->paired) {
+                        CLIENT_INFO(context, "Refusing to pair: already paired");
+                        send_tlv_error_response(context, 2, TLVError_Unavailable);
+                        break;
+                    }
 
-            if (context->server->pairing_context) {
-                if (context->server->pairing_context->client != context) {
-                    CLIENT_INFO(context, "Refusing to pair: another pairing in progress");
-                    send_tlv_error_response(context, 2, TLVError_Busy);
+                    if (context->server->pairing_context) {
+                        if (context->server->pairing_context->client != context) {
+                            CLIENT_INFO(context, "Refusing to pair: another pairing in progress");
+                            send_tlv_error_response(context, 2, TLVError_Busy);
+                            break;
+                        }
+                    } else {
+                        context->server->pairing_context = pairing_context_new();
+                        context->server->pairing_context->client = context;
+                    }
+
+                    CLIENT_DEBUG(context, "Initializing crypto");
+                    DEBUG_HEAP();
+
+                    char password[11];
+                    if (context->server->config->password) {
+                        strncpy(password, context->server->config->password, sizeof(password));
+                        CLIENT_DEBUG(context, "Using user-specified password: %s", password);
+                    } else {
+                        for (int i=0; i<10; i++) {
+                            password[i] = homekit_random() % 10 + '0';
+                        }
+                        password[3] = password[6] = '-';
+                        password[10] = 0;
+                        CLIENT_DEBUG(context, "Using random password: %s", password);
+                    }
+
+                    if (context->server->config->password_callback) {
+                        context->server->config->password_callback(password);
+                    }
+
+                    crypto_srp_init(
+                            context->server->pairing_context->srp,
+                            "Pair-Setup", password
+                            );
+
+                    if (context->server->pairing_context->public_key) {
+                        free(context->server->pairing_context->public_key);
+                        context->server->pairing_context->public_key = NULL;
+                    }
+                    context->server->pairing_context->public_key_size = 0;
+                    crypto_srp_get_public_key(context->server->pairing_context->srp, NULL, &context->server->pairing_context->public_key_size);
+
+                    context->server->pairing_context->public_key = malloc(context->server->pairing_context->public_key_size);
+                    int r = crypto_srp_get_public_key(context->server->pairing_context->srp, context->server->pairing_context->public_key, &context->server->pairing_context->public_key_size);
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to dump SPR public key (code %d)", r);
+
+                        pairing_context_free(context->server->pairing_context);
+                        context->server->pairing_context = NULL;
+
+                        send_tlv_error_response(context, 2, TLVError_Unknown);
+                        break;
+                    }
+
+                    size_t salt_size = 0;
+                    crypto_srp_get_salt(context->server->pairing_context->srp, NULL, &salt_size);
+
+                    byte *salt = malloc(salt_size);
+                    r = crypto_srp_get_salt(context->server->pairing_context->srp, salt, &salt_size);
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to get salt (code %d)", r);
+
+                        free(salt);
+                        pairing_context_free(context->server->pairing_context);
+                        context->server->pairing_context = NULL;
+
+                        send_tlv_error_response(context, 2, TLVError_Unknown);
+                        break;
+                    }
+
+                    tlv_values_t *response = tlv_new();
+                    tlv_add_value(response, TLVType_PublicKey, context->server->pairing_context->public_key, context->server->pairing_context->public_key_size);
+                    tlv_add_value(response, TLVType_Salt, salt, salt_size);
+                    tlv_add_integer_value(response, TLVType_State, 1, 2);
+
+                    free(salt);
+
+                    send_tlv_response(context, response);
                     break;
                 }
-            } else {
-                context->server->pairing_context = pairing_context_new();
-                context->server->pairing_context->client = context;
-            }
-
-            CLIENT_DEBUG(context, "Initializing crypto");
-            DEBUG_HEAP();
-
-            char password[11];
-            if (context->server->config->password) {
-                strncpy(password, context->server->config->password, sizeof(password));
-                CLIENT_DEBUG(context, "Using user-specified password: %s", password);
-            } else {
-                for (int i=0; i<10; i++) {
-                    password[i] = homekit_random() % 10 + '0';
-                }
-                password[3] = password[6] = '-';
-                password[10] = 0;
-                CLIENT_DEBUG(context, "Using random password: %s", password);
-            }
-
-            if (context->server->config->password_callback) {
-                context->server->config->password_callback(password);
-            }
-
-            crypto_srp_init(
-                context->server->pairing_context->srp,
-                "Pair-Setup", password
-            );
-
-            if (context->server->pairing_context->public_key) {
-                free(context->server->pairing_context->public_key);
-                context->server->pairing_context->public_key = NULL;
-            }
-            context->server->pairing_context->public_key_size = 0;
-            crypto_srp_get_public_key(context->server->pairing_context->srp, NULL, &context->server->pairing_context->public_key_size);
-
-            context->server->pairing_context->public_key = malloc(context->server->pairing_context->public_key_size);
-            int r = crypto_srp_get_public_key(context->server->pairing_context->srp, context->server->pairing_context->public_key, &context->server->pairing_context->public_key_size);
-            if (r) {
-                CLIENT_ERROR(context, "Failed to dump SPR public key (code %d)", r);
-
-                pairing_context_free(context->server->pairing_context);
-                context->server->pairing_context = NULL;
-
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
-
-            size_t salt_size = 0;
-            crypto_srp_get_salt(context->server->pairing_context->srp, NULL, &salt_size);
-
-            byte *salt = malloc(salt_size);
-            r = crypto_srp_get_salt(context->server->pairing_context->srp, salt, &salt_size);
-            if (r) {
-                CLIENT_ERROR(context, "Failed to get salt (code %d)", r);
-
-                free(salt);
-                pairing_context_free(context->server->pairing_context);
-                context->server->pairing_context = NULL;
-
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
-
-            tlv_values_t *response = tlv_new();
-            tlv_add_value(response, TLVType_PublicKey, context->server->pairing_context->public_key, context->server->pairing_context->public_key_size);
-            tlv_add_value(response, TLVType_Salt, salt, salt_size);
-            tlv_add_integer_value(response, TLVType_State, 1, 2);
-
-            free(salt);
-
-            send_tlv_response(context, response);
-            break;
-        }
         case 3: {
-            CLIENT_INFO(context, "Pair Setup Step 2/3");
-            DEBUG_HEAP();
-            tlv_t *device_public_key = tlv_get_value(message, TLVType_PublicKey);
-            if (!device_public_key) {
-                CLIENT_ERROR(context, "Invalid payload: no device public key");
-                send_tlv_error_response(context, 4, TLVError_Authentication);
-                break;
-            }
+                    CLIENT_INFO(context, "Pair Setup Step 2/3");
+                    DEBUG_HEAP();
+                    tlv_t *device_public_key = tlv_get_value(message, TLVType_PublicKey);
+                    if (!device_public_key) {
+                        CLIENT_ERROR(context, "Invalid payload: no device public key");
+                        send_tlv_error_response(context, 4, TLVError_Authentication);
+                        break;
+                    }
 
-            tlv_t *proof = tlv_get_value(message, TLVType_Proof);
-            if (!proof) {
-                CLIENT_ERROR(context, "Invalid payload: no device proof");
-                send_tlv_error_response(context, 4, TLVError_Authentication);
-                break;
-            }
+                    tlv_t *proof = tlv_get_value(message, TLVType_Proof);
+                    if (!proof) {
+                        CLIENT_ERROR(context, "Invalid payload: no device proof");
+                        send_tlv_error_response(context, 4, TLVError_Authentication);
+                        break;
+                    }
 
-            CLIENT_DEBUG(context, "Computing SRP shared secret");
-            DEBUG_HEAP();
-            int r = crypto_srp_compute_key(
-                context->server->pairing_context->srp,
-                device_public_key->value, device_public_key->size,
-                context->server->pairing_context->public_key,
-                context->server->pairing_context->public_key_size
-            );
-            if (r) {
-                CLIENT_ERROR(context, "Failed to compute SRP shared secret (code %d)", r);
-                send_tlv_error_response(context, 4, TLVError_Authentication);
-                break;
-            }
+                    CLIENT_DEBUG(context, "Computing SRP shared secret");
+                    DEBUG_HEAP();
+                    int r = crypto_srp_compute_key(
+                            context->server->pairing_context->srp,
+                            device_public_key->value, device_public_key->size,
+                            context->server->pairing_context->public_key,
+                            context->server->pairing_context->public_key_size
+                            );
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to compute SRP shared secret (code %d)", r);
+                        send_tlv_error_response(context, 4, TLVError_Authentication);
+                        break;
+                    }
 
-            free(context->server->pairing_context->public_key);
-            context->server->pairing_context->public_key = NULL;
-            context->server->pairing_context->public_key_size = 0;
+                    free(context->server->pairing_context->public_key);
+                    context->server->pairing_context->public_key = NULL;
+                    context->server->pairing_context->public_key_size = 0;
 
-            CLIENT_DEBUG(context, "Verifying peer's proof");
-            DEBUG_HEAP();
-            r = crypto_srp_verify(context->server->pairing_context->srp, proof->value, proof->size);
-            if (r) {
-                CLIENT_ERROR(context, "Failed to verify peer's proof (code %d)", r);
-                send_tlv_error_response(context, 4, TLVError_Authentication);
-                break;
-            }
+                    CLIENT_DEBUG(context, "Verifying peer's proof");
+                    DEBUG_HEAP();
+                    r = crypto_srp_verify(context->server->pairing_context->srp, proof->value, proof->size);
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to verify peer's proof (code %d)", r);
+                        send_tlv_error_response(context, 4, TLVError_Authentication);
+                        break;
+                    }
 
-            CLIENT_DEBUG(context, "Generating own proof");
-            size_t server_proof_size = 0;
-            crypto_srp_get_proof(context->server->pairing_context->srp, NULL, &server_proof_size);
+                    CLIENT_DEBUG(context, "Generating own proof");
+                    size_t server_proof_size = 0;
+                    crypto_srp_get_proof(context->server->pairing_context->srp, NULL, &server_proof_size);
 
-            byte *server_proof = malloc(server_proof_size);
-            r = crypto_srp_get_proof(context->server->pairing_context->srp, server_proof, &server_proof_size);
+                    byte *server_proof = malloc(server_proof_size);
+                    r = crypto_srp_get_proof(context->server->pairing_context->srp, server_proof, &server_proof_size);
 
-            tlv_values_t *response = tlv_new();
-            tlv_add_integer_value(response, TLVType_State, 1, 4);
-            tlv_add_value(response, TLVType_Proof, server_proof, server_proof_size);
+                    tlv_values_t *response = tlv_new();
+                    tlv_add_integer_value(response, TLVType_State, 1, 4);
+                    tlv_add_value(response, TLVType_Proof, server_proof, server_proof_size);
 
-            free(server_proof);
+                    free(server_proof);
 
-            send_tlv_response(context, response);
-            break;
-        }
+                    send_tlv_response(context, response);
+                    break;
+                }
         case 5: {
-            CLIENT_INFO(context, "Pair Setup Step 3/3");
-            DEBUG_HEAP();
-
-            int r;
-
-            byte shared_secret[HKDF_HASH_SIZE];
-            size_t shared_secret_size = sizeof(shared_secret);
-
-            CLIENT_DEBUG(context, "Calculating shared secret");
-            const char salt1[] = "Pair-Setup-Encrypt-Salt";
-            const char info1[] = "Pair-Setup-Encrypt-Info";
-            r = crypto_srp_hkdf(
-                context->server->pairing_context->srp,
-                (byte *)salt1, sizeof(salt1)-1,
-                (byte *)info1, sizeof(info1)-1,
-                shared_secret, &shared_secret_size
-            );
-            if (r) {
-                CLIENT_ERROR(context, "Failed to generate shared secret (code %d)", r);
-                send_tlv_error_response(context, 6, TLVError_Authentication);
-                break;
-            }
-
-            tlv_t *tlv_encrypted_data = tlv_get_value(message, TLVType_EncryptedData);
-            if (!tlv_encrypted_data) {
-                CLIENT_ERROR(context, "Invalid payload: no encrypted data");
-                send_tlv_error_response(context, 6, TLVError_Authentication);
-                break;
-            }
-
-            CLIENT_DEBUG(context, "Decrypting payload");
-            size_t decrypted_data_size = 0;
-            crypto_chacha20poly1305_decrypt(
-                shared_secret, (byte *)"\x0\x0\x0\x0PS-Msg05", NULL, 0,
-                tlv_encrypted_data->value, tlv_encrypted_data->size,
-                NULL, &decrypted_data_size
-            );
-
-            byte *decrypted_data = malloc(decrypted_data_size);
-            // TODO: check malloc result
-            r = crypto_chacha20poly1305_decrypt(
-                shared_secret, (byte *)"\x0\x0\x0\x0PS-Msg05", NULL, 0,
-                tlv_encrypted_data->value, tlv_encrypted_data->size,
-                decrypted_data, &decrypted_data_size
-            );
-            if (r) {
-                CLIENT_ERROR(context, "Failed to decrypt data (code %d)", r);
-
-                free(decrypted_data);
-
-                send_tlv_error_response(context, 6, TLVError_Authentication);
-                break;
-            }
-
-            tlv_values_t *decrypted_message = tlv_new();
-            r = tlv_parse(decrypted_data, decrypted_data_size, decrypted_message);
-            if (r) {
-                CLIENT_ERROR(context, "Failed to parse decrypted TLV (code %d)", r);
-
-                tlv_free(decrypted_message);
-                free(decrypted_data);
-
-                send_tlv_error_response(context, 6, TLVError_Authentication);
-                break;
-            }
-
-            free(decrypted_data);
-
-            tlv_t *tlv_device_id = tlv_get_value(decrypted_message, TLVType_Identifier);
-            if (!tlv_device_id) {
-                CLIENT_ERROR(context, "Invalid encrypted payload: no device identifier");
-
-                tlv_free(decrypted_message);
-
-                send_tlv_error_response(context, 6, TLVError_Authentication);
-                break;
-            }
-
-            tlv_t *tlv_device_public_key = tlv_get_value(decrypted_message, TLVType_PublicKey);
-            if (!tlv_device_public_key) {
-                CLIENT_ERROR(context, "Invalid encrypted payload: no device public key");
-
-                tlv_free(decrypted_message);
-
-                send_tlv_error_response(context, 6, TLVError_Authentication);
-                break;
-            }
-
-            tlv_t *tlv_device_signature = tlv_get_value(decrypted_message, TLVType_Signature);
-            if (!tlv_device_signature) {
-                CLIENT_ERROR(context, "Invalid encrypted payload: no device signature");
-
-                tlv_free(decrypted_message);
-
-                send_tlv_error_response(context, 6, TLVError_Authentication);
-                break;
-            }
-
-            CLIENT_DEBUG(context, "Importing device public key");
-            ed25519_key *device_key = crypto_ed25519_new();
-            r = crypto_ed25519_import_public_key(
-                device_key,
-                tlv_device_public_key->value, tlv_device_public_key->size
-            );
-            if (r) {
-                CLIENT_ERROR(context, "Failed to import device public Key (code %d)", r);
-
-                crypto_ed25519_free(device_key);
-                tlv_free(decrypted_message);
-
-                send_tlv_error_response(context, 6, TLVError_Authentication);
-                break;
-            }
-
-            byte device_x[HKDF_HASH_SIZE];
-            size_t device_x_size = sizeof(device_x);
-
-            CLIENT_DEBUG(context, "Calculating DeviceX");
-            const char salt2[] = "Pair-Setup-Controller-Sign-Salt";
-            const char info2[] = "Pair-Setup-Controller-Sign-Info";
-            r = crypto_srp_hkdf(
-                context->server->pairing_context->srp,
-                (byte *)salt2, sizeof(salt2)-1,
-                (byte *)info2, sizeof(info2)-1,
-                device_x, &device_x_size
-            );
-            if (r) {
-                CLIENT_ERROR(context, "Failed to generate DeviceX (code %d)", r);
-
-                crypto_ed25519_free(device_key);
-                tlv_free(decrypted_message);
-
-                send_tlv_error_response(context, 6, TLVError_Authentication);
-                break;
-            }
-
-            size_t device_info_size = device_x_size + tlv_device_id->size + tlv_device_public_key->size;
-            byte *device_info = malloc(device_info_size);
-            memcpy(device_info,
-                   device_x,
-                   device_x_size);
-            memcpy(device_info + device_x_size,
-                   tlv_device_id->value,
-                   tlv_device_id->size);
-            memcpy(device_info + device_x_size + tlv_device_id->size,
-                   tlv_device_public_key->value,
-                   tlv_device_public_key->size);
-
-            CLIENT_DEBUG(context, "Verifying device signature");
-            r = crypto_ed25519_verify(
-                device_key,
-                device_info, device_info_size,
-                tlv_device_signature->value, tlv_device_signature->size
-            );
-            if (r) {
-                CLIENT_ERROR(context, "Failed to generate DeviceX (code %d)", r);
-
-                free(device_info);
-                crypto_ed25519_free(device_key);
-                tlv_free(decrypted_message);
-
-                send_tlv_error_response(context, 6, TLVError_Authentication);
-                break;
-            }
-
-            free(device_info);
-
-            char *device_id = strndup((const char *)tlv_device_id->value, tlv_device_id->size);
-
-            r = homekit_storage_add_pairing(device_id, device_key, pairing_permissions_admin);
-            if (r) {
-                CLIENT_ERROR(context, "Failed to store pairing (code %d)", r);
-
-                free(device_id);
-                crypto_ed25519_free(device_key);
-                tlv_free(decrypted_message);
-                send_tlv_error_response(context, 6, TLVError_Unknown);
-                break;
-            }
-
-            INFO("Added pairing with %s", device_id);
-
-            HOMEKIT_NOTIFY_EVENT(context->server, HOMEKIT_EVENT_PAIRING_ADDED);
-
-            free(device_id);
-
-            crypto_ed25519_free(device_key);
-            tlv_free(decrypted_message);
-
-            CLIENT_DEBUG(context, "Exporting accessory public key");
-            size_t accessory_public_key_size = 0;
-            crypto_ed25519_export_public_key(context->server->accessory_key, NULL, &accessory_public_key_size);
-
-            byte *accessory_public_key = malloc(accessory_public_key_size);
-            r = crypto_ed25519_export_public_key(context->server->accessory_key, accessory_public_key, &accessory_public_key_size);
-            if (r) {
-                CLIENT_ERROR(context, "Failed to export accessory public key (code %d)", r);
-
-                free(accessory_public_key);
-
-                send_tlv_error_response(context, 6, TLVError_Authentication);
-                break;
-            }
-
-            size_t accessory_id_size = strlen(context->server->accessory_id);
-            size_t accessory_info_size = HKDF_HASH_SIZE + accessory_id_size + accessory_public_key_size;
-            byte *accessory_info = malloc(accessory_info_size);
-
-            CLIENT_DEBUG(context, "Calculating AccessoryX");
-            size_t accessory_x_size = accessory_info_size;
-            const char salt3[] = "Pair-Setup-Accessory-Sign-Salt";
-            const char info3[] = "Pair-Setup-Accessory-Sign-Info";
-            r = crypto_srp_hkdf(
-                context->server->pairing_context->srp,
-                (byte *)salt3, sizeof(salt3)-1,
-                (byte *)info3, sizeof(info3)-1,
-                accessory_info, &accessory_x_size
-            );
-            if (r) {
-                CLIENT_ERROR(context, "Failed to generate AccessoryX (code %d)", r);
-
-                free(accessory_info);
-                free(accessory_public_key);
-
-                send_tlv_error_response(context, 6, TLVError_Unknown);
-                break;
-            }
-
-            memcpy(accessory_info + accessory_x_size,
-                   context->server->accessory_id, accessory_id_size);
-            memcpy(accessory_info + accessory_x_size + accessory_id_size,
-                   accessory_public_key, accessory_public_key_size);
-
-            CLIENT_DEBUG(context, "Generating accessory signature");
-            DEBUG_HEAP();
-            size_t accessory_signature_size = 0;
-            crypto_ed25519_sign(
-                context->server->accessory_key,
-                accessory_info, accessory_info_size,
-                NULL, &accessory_signature_size
-            );
-
-            byte *accessory_signature = malloc(accessory_signature_size);
-            r = crypto_ed25519_sign(
-                context->server->accessory_key,
-                accessory_info, accessory_info_size,
-                accessory_signature, &accessory_signature_size
-            );
-            if (r) {
-                CLIENT_ERROR(context, "Failed to generate accessory signature (code %d)", r);
-
-                free(accessory_signature);
-                free(accessory_public_key);
-                free(accessory_info);
-
-                send_tlv_error_response(context, 6, TLVError_Unknown);
-                break;
-            }
-
-            free(accessory_info);
-
-            tlv_values_t *response_message = tlv_new();
-            tlv_add_value(response_message, TLVType_Identifier,
-                          (byte *)context->server->accessory_id, accessory_id_size);
-            tlv_add_value(response_message, TLVType_PublicKey,
-                          accessory_public_key, accessory_public_key_size);
-            tlv_add_value(response_message, TLVType_Signature,
-                          accessory_signature, accessory_signature_size);
-
-            free(accessory_public_key);
-            free(accessory_signature);
-
-            size_t response_data_size = 0;
-            TLV_DEBUG(response_message);
-
-            tlv_format(response_message, NULL, &response_data_size);
-
-            byte *response_data = malloc(response_data_size);
-            r = tlv_format(response_message, response_data, &response_data_size);
-            if (r) {
-                CLIENT_ERROR(context, "Failed to format TLV response (code %d)", r);
-
-                free(response_data);
-                tlv_free(response_message);
-
-                send_tlv_error_response(context, 6, TLVError_Unknown);
-                break;
-            }
-
-            tlv_free(response_message);
-
-            CLIENT_DEBUG(context, "Encrypting response");
-            size_t encrypted_response_data_size = 0;
-            crypto_chacha20poly1305_encrypt(
-                shared_secret, (byte *)"\x0\x0\x0\x0PS-Msg06", NULL, 0,
-                response_data, response_data_size,
-                NULL, &encrypted_response_data_size
-            );
-
-            byte *encrypted_response_data = malloc(encrypted_response_data_size);
-            r = crypto_chacha20poly1305_encrypt(
-                shared_secret, (byte *)"\x0\x0\x0\x0PS-Msg06", NULL, 0,
-                response_data, response_data_size,
-                encrypted_response_data, &encrypted_response_data_size
-            );
-
-            free(response_data);
-
-            if (r) {
-                CLIENT_ERROR(context, "Failed to encrypt response data (code %d)", r);
-
-                free(encrypted_response_data);
-
-                send_tlv_error_response(context, 6, TLVError_Unknown);
-                break;
-            }
-
-            tlv_values_t *response = tlv_new();
-            tlv_add_integer_value(response, TLVType_State, 1, 6);
-            tlv_add_value(response, TLVType_EncryptedData,
-                          encrypted_response_data, encrypted_response_data_size);
-
-            free(encrypted_response_data);
-
-            send_tlv_response(context, response);
-
-            pairing_context_free(context->server->pairing_context);
-            context->server->pairing_context = NULL;
-
-            context->server->paired = 1;
-            homekit_setup_mdns(context->server);
-
-            CLIENT_INFO(context, "Successfully paired");
-
-            break;
-        }
+                    CLIENT_INFO(context, "Pair Setup Step 3/3");
+                    DEBUG_HEAP();
+
+                    int r;
+
+                    byte shared_secret[HKDF_HASH_SIZE];
+                    size_t shared_secret_size = sizeof(shared_secret);
+
+                    CLIENT_DEBUG(context, "Calculating shared secret");
+                    const char salt1[] = "Pair-Setup-Encrypt-Salt";
+                    const char info1[] = "Pair-Setup-Encrypt-Info";
+                    r = crypto_srp_hkdf(
+                            context->server->pairing_context->srp,
+                            (byte *)salt1, sizeof(salt1)-1,
+                            (byte *)info1, sizeof(info1)-1,
+                            shared_secret, &shared_secret_size
+                            );
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to generate shared secret (code %d)", r);
+                        send_tlv_error_response(context, 6, TLVError_Authentication);
+                        break;
+                    }
+
+                    tlv_t *tlv_encrypted_data = tlv_get_value(message, TLVType_EncryptedData);
+                    if (!tlv_encrypted_data) {
+                        CLIENT_ERROR(context, "Invalid payload: no encrypted data");
+                        send_tlv_error_response(context, 6, TLVError_Authentication);
+                        break;
+                    }
+
+                    CLIENT_DEBUG(context, "Decrypting payload");
+                    size_t decrypted_data_size = 0;
+                    crypto_chacha20poly1305_decrypt(
+                            shared_secret, (byte *)"\x0\x0\x0\x0PS-Msg05", NULL, 0,
+                            tlv_encrypted_data->value, tlv_encrypted_data->size,
+                            NULL, &decrypted_data_size
+                            );
+
+                    byte *decrypted_data = malloc(decrypted_data_size);
+                    // TODO: check malloc result
+                    r = crypto_chacha20poly1305_decrypt(
+                            shared_secret, (byte *)"\x0\x0\x0\x0PS-Msg05", NULL, 0,
+                            tlv_encrypted_data->value, tlv_encrypted_data->size,
+                            decrypted_data, &decrypted_data_size
+                            );
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to decrypt data (code %d)", r);
+
+                        free(decrypted_data);
+
+                        send_tlv_error_response(context, 6, TLVError_Authentication);
+                        break;
+                    }
+
+                    tlv_values_t *decrypted_message = tlv_new();
+                    r = tlv_parse(decrypted_data, decrypted_data_size, decrypted_message);
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to parse decrypted TLV (code %d)", r);
+
+                        tlv_free(decrypted_message);
+                        free(decrypted_data);
+
+                        send_tlv_error_response(context, 6, TLVError_Authentication);
+                        break;
+                    }
+
+                    free(decrypted_data);
+
+                    tlv_t *tlv_device_id = tlv_get_value(decrypted_message, TLVType_Identifier);
+                    if (!tlv_device_id) {
+                        CLIENT_ERROR(context, "Invalid encrypted payload: no device identifier");
+
+                        tlv_free(decrypted_message);
+
+                        send_tlv_error_response(context, 6, TLVError_Authentication);
+                        break;
+                    }
+
+                    tlv_t *tlv_device_public_key = tlv_get_value(decrypted_message, TLVType_PublicKey);
+                    if (!tlv_device_public_key) {
+                        CLIENT_ERROR(context, "Invalid encrypted payload: no device public key");
+
+                        tlv_free(decrypted_message);
+
+                        send_tlv_error_response(context, 6, TLVError_Authentication);
+                        break;
+                    }
+
+                    tlv_t *tlv_device_signature = tlv_get_value(decrypted_message, TLVType_Signature);
+                    if (!tlv_device_signature) {
+                        CLIENT_ERROR(context, "Invalid encrypted payload: no device signature");
+
+                        tlv_free(decrypted_message);
+
+                        send_tlv_error_response(context, 6, TLVError_Authentication);
+                        break;
+                    }
+
+                    CLIENT_DEBUG(context, "Importing device public key");
+                    ed25519_key *device_key = crypto_ed25519_new();
+                    r = crypto_ed25519_import_public_key(
+                            device_key,
+                            tlv_device_public_key->value, tlv_device_public_key->size
+                            );
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to import device public Key (code %d)", r);
+
+                        crypto_ed25519_free(device_key);
+                        tlv_free(decrypted_message);
+
+                        send_tlv_error_response(context, 6, TLVError_Authentication);
+                        break;
+                    }
+
+                    byte device_x[HKDF_HASH_SIZE];
+                    size_t device_x_size = sizeof(device_x);
+
+                    CLIENT_DEBUG(context, "Calculating DeviceX");
+                    const char salt2[] = "Pair-Setup-Controller-Sign-Salt";
+                    const char info2[] = "Pair-Setup-Controller-Sign-Info";
+                    r = crypto_srp_hkdf(
+                            context->server->pairing_context->srp,
+                            (byte *)salt2, sizeof(salt2)-1,
+                            (byte *)info2, sizeof(info2)-1,
+                            device_x, &device_x_size
+                            );
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to generate DeviceX (code %d)", r);
+
+                        crypto_ed25519_free(device_key);
+                        tlv_free(decrypted_message);
+
+                        send_tlv_error_response(context, 6, TLVError_Authentication);
+                        break;
+                    }
+
+                    size_t device_info_size = device_x_size + tlv_device_id->size + tlv_device_public_key->size;
+                    byte *device_info = malloc(device_info_size);
+                    memcpy(device_info,
+                            device_x,
+                            device_x_size);
+                    memcpy(device_info + device_x_size,
+                            tlv_device_id->value,
+                            tlv_device_id->size);
+                    memcpy(device_info + device_x_size + tlv_device_id->size,
+                            tlv_device_public_key->value,
+                            tlv_device_public_key->size);
+
+                    CLIENT_DEBUG(context, "Verifying device signature");
+                    r = crypto_ed25519_verify(
+                            device_key,
+                            device_info, device_info_size,
+                            tlv_device_signature->value, tlv_device_signature->size
+                            );
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to generate DeviceX (code %d)", r);
+
+                        free(device_info);
+                        crypto_ed25519_free(device_key);
+                        tlv_free(decrypted_message);
+
+                        send_tlv_error_response(context, 6, TLVError_Authentication);
+                        break;
+                    }
+
+                    free(device_info);
+
+                    char *device_id = strndup((const char *)tlv_device_id->value, tlv_device_id->size);
+
+                    r = homekit_storage_add_pairing(device_id, device_key, pairing_permissions_admin);
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to store pairing (code %d)", r);
+
+                        free(device_id);
+                        crypto_ed25519_free(device_key);
+                        tlv_free(decrypted_message);
+                        send_tlv_error_response(context, 6, TLVError_Unknown);
+                        break;
+                    }
+
+                    INFO("Added pairing with %s", device_id);
+
+                    HOMEKIT_NOTIFY_EVENT(context->server, HOMEKIT_EVENT_PAIRING_ADDED);
+
+                    free(device_id);
+
+                    crypto_ed25519_free(device_key);
+                    tlv_free(decrypted_message);
+
+                    CLIENT_DEBUG(context, "Exporting accessory public key");
+                    size_t accessory_public_key_size = 0;
+                    crypto_ed25519_export_public_key(context->server->accessory_key, NULL, &accessory_public_key_size);
+
+                    byte *accessory_public_key = malloc(accessory_public_key_size);
+                    r = crypto_ed25519_export_public_key(context->server->accessory_key, accessory_public_key, &accessory_public_key_size);
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to export accessory public key (code %d)", r);
+
+                        free(accessory_public_key);
+
+                        send_tlv_error_response(context, 6, TLVError_Authentication);
+                        break;
+                    }
+
+                    size_t accessory_id_size = strlen(context->server->accessory_id);
+                    size_t accessory_info_size = HKDF_HASH_SIZE + accessory_id_size + accessory_public_key_size;
+                    byte *accessory_info = malloc(accessory_info_size);
+
+                    CLIENT_DEBUG(context, "Calculating AccessoryX");
+                    size_t accessory_x_size = accessory_info_size;
+                    const char salt3[] = "Pair-Setup-Accessory-Sign-Salt";
+                    const char info3[] = "Pair-Setup-Accessory-Sign-Info";
+                    r = crypto_srp_hkdf(
+                            context->server->pairing_context->srp,
+                            (byte *)salt3, sizeof(salt3)-1,
+                            (byte *)info3, sizeof(info3)-1,
+                            accessory_info, &accessory_x_size
+                            );
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to generate AccessoryX (code %d)", r);
+
+                        free(accessory_info);
+                        free(accessory_public_key);
+
+                        send_tlv_error_response(context, 6, TLVError_Unknown);
+                        break;
+                    }
+
+                    memcpy(accessory_info + accessory_x_size,
+                            context->server->accessory_id, accessory_id_size);
+                    memcpy(accessory_info + accessory_x_size + accessory_id_size,
+                            accessory_public_key, accessory_public_key_size);
+
+                    CLIENT_DEBUG(context, "Generating accessory signature");
+                    DEBUG_HEAP();
+                    size_t accessory_signature_size = 0;
+                    crypto_ed25519_sign(
+                            context->server->accessory_key,
+                            accessory_info, accessory_info_size,
+                            NULL, &accessory_signature_size
+                            );
+
+                    byte *accessory_signature = malloc(accessory_signature_size);
+                    r = crypto_ed25519_sign(
+                            context->server->accessory_key,
+                            accessory_info, accessory_info_size,
+                            accessory_signature, &accessory_signature_size
+                            );
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to generate accessory signature (code %d)", r);
+
+                        free(accessory_signature);
+                        free(accessory_public_key);
+                        free(accessory_info);
+
+                        send_tlv_error_response(context, 6, TLVError_Unknown);
+                        break;
+                    }
+
+                    free(accessory_info);
+
+                    tlv_values_t *response_message = tlv_new();
+                    tlv_add_value(response_message, TLVType_Identifier,
+                            (byte *)context->server->accessory_id, accessory_id_size);
+                    tlv_add_value(response_message, TLVType_PublicKey,
+                            accessory_public_key, accessory_public_key_size);
+                    tlv_add_value(response_message, TLVType_Signature,
+                            accessory_signature, accessory_signature_size);
+
+                    free(accessory_public_key);
+                    free(accessory_signature);
+
+                    size_t response_data_size = 0;
+                    TLV_DEBUG(response_message);
+
+                    tlv_format(response_message, NULL, &response_data_size);
+
+                    byte *response_data = malloc(response_data_size);
+                    r = tlv_format(response_message, response_data, &response_data_size);
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to format TLV response (code %d)", r);
+
+                        free(response_data);
+                        tlv_free(response_message);
+
+                        send_tlv_error_response(context, 6, TLVError_Unknown);
+                        break;
+                    }
+
+                    tlv_free(response_message);
+
+                    CLIENT_DEBUG(context, "Encrypting response");
+                    size_t encrypted_response_data_size = 0;
+                    crypto_chacha20poly1305_encrypt(
+                            shared_secret, (byte *)"\x0\x0\x0\x0PS-Msg06", NULL, 0,
+                            response_data, response_data_size,
+                            NULL, &encrypted_response_data_size
+                            );
+
+                    byte *encrypted_response_data = malloc(encrypted_response_data_size);
+                    r = crypto_chacha20poly1305_encrypt(
+                            shared_secret, (byte *)"\x0\x0\x0\x0PS-Msg06", NULL, 0,
+                            response_data, response_data_size,
+                            encrypted_response_data, &encrypted_response_data_size
+                            );
+
+                    free(response_data);
+
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to encrypt response data (code %d)", r);
+
+                        free(encrypted_response_data);
+
+                        send_tlv_error_response(context, 6, TLVError_Unknown);
+                        break;
+                    }
+
+                    tlv_values_t *response = tlv_new();
+                    tlv_add_integer_value(response, TLVType_State, 1, 6);
+                    tlv_add_value(response, TLVType_EncryptedData,
+                            encrypted_response_data, encrypted_response_data_size);
+
+                    free(encrypted_response_data);
+
+                    send_tlv_response(context, response);
+
+                    pairing_context_free(context->server->pairing_context);
+                    context->server->pairing_context = NULL;
+
+                    context->server->paired = 1;
+                    homekit_setup_mdns(context->server);
+
+                    CLIENT_INFO(context, "Successfully paired");
+
+                    break;
+                }
         default: {
-            CLIENT_ERROR(context, "Unknown state: %d",
-                  tlv_get_integer_value(message, TLVType_State, -1));
-        }
+                     CLIENT_ERROR(context, "Unknown state: %d",
+                             tlv_get_integer_value(message, TLVType_State, -1));
+                 }
     }
 
     tlv_free(message);
@@ -1542,418 +1544,418 @@ void homekit_server_on_pair_verify(client_context_t *context, const byte *data, 
 
     switch(tlv_get_integer_value(message, TLVType_State, -1)) {
         case 1: {
-            CLIENT_INFO(context, "Pair Verify Step 1/2");
+                    CLIENT_INFO(context, "Pair Verify Step 1/2");
 
-            CLIENT_DEBUG(context, "Importing device Curve25519 public key");
-            tlv_t *tlv_device_public_key = tlv_get_value(message, TLVType_PublicKey);
-            if (!tlv_device_public_key) {
-                CLIENT_ERROR(context, "Device Curve25519 public key not found");
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
-            curve25519_key *device_key = crypto_curve25519_new();
-            r = crypto_curve25519_import_public(
-                device_key,
-                tlv_device_public_key->value, tlv_device_public_key->size
-            );
-            if (r) {
-                CLIENT_ERROR(context, "Failed to import device Curve25519 public key (code %d)", r);
-                crypto_curve25519_free(device_key);
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
+                    CLIENT_DEBUG(context, "Importing device Curve25519 public key");
+                    tlv_t *tlv_device_public_key = tlv_get_value(message, TLVType_PublicKey);
+                    if (!tlv_device_public_key) {
+                        CLIENT_ERROR(context, "Device Curve25519 public key not found");
+                        send_tlv_error_response(context, 2, TLVError_Unknown);
+                        break;
+                    }
+                    curve25519_key *device_key = crypto_curve25519_new();
+                    r = crypto_curve25519_import_public(
+                            device_key,
+                            tlv_device_public_key->value, tlv_device_public_key->size
+                            );
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to import device Curve25519 public key (code %d)", r);
+                        crypto_curve25519_free(device_key);
+                        send_tlv_error_response(context, 2, TLVError_Unknown);
+                        break;
+                    }
 
-            CLIENT_DEBUG(context, "Generating accessory Curve25519 key");
-            curve25519_key *my_key = crypto_curve25519_generate();
-            if (!my_key) {
-                CLIENT_ERROR(context, "Failed to generate accessory Curve25519 key");
-                crypto_curve25519_free(device_key);
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
+                    CLIENT_DEBUG(context, "Generating accessory Curve25519 key");
+                    curve25519_key *my_key = crypto_curve25519_generate();
+                    if (!my_key) {
+                        CLIENT_ERROR(context, "Failed to generate accessory Curve25519 key");
+                        crypto_curve25519_free(device_key);
+                        send_tlv_error_response(context, 2, TLVError_Unknown);
+                        break;
+                    }
 
-            CLIENT_DEBUG(context, "Exporting accessory Curve25519 public key");
-            size_t my_key_public_size = 0;
-            crypto_curve25519_export_public(my_key, NULL, &my_key_public_size);
+                    CLIENT_DEBUG(context, "Exporting accessory Curve25519 public key");
+                    size_t my_key_public_size = 0;
+                    crypto_curve25519_export_public(my_key, NULL, &my_key_public_size);
 
-            byte *my_key_public = malloc(my_key_public_size);
-            r = crypto_curve25519_export_public(my_key, my_key_public, &my_key_public_size);
-            if (r) {
-                CLIENT_ERROR(context, "Failed to export accessory Curve25519 public key (code %d)", r);
-                free(my_key_public);
-                crypto_curve25519_free(my_key);
-                crypto_curve25519_free(device_key);
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
+                    byte *my_key_public = malloc(my_key_public_size);
+                    r = crypto_curve25519_export_public(my_key, my_key_public, &my_key_public_size);
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to export accessory Curve25519 public key (code %d)", r);
+                        free(my_key_public);
+                        crypto_curve25519_free(my_key);
+                        crypto_curve25519_free(device_key);
+                        send_tlv_error_response(context, 2, TLVError_Unknown);
+                        break;
+                    }
 
-            CLIENT_DEBUG(context, "Generating Curve25519 shared secret");
-            size_t shared_secret_size = 0;
-            crypto_curve25519_shared_secret(my_key, device_key, NULL, &shared_secret_size);
+                    CLIENT_DEBUG(context, "Generating Curve25519 shared secret");
+                    size_t shared_secret_size = 0;
+                    crypto_curve25519_shared_secret(my_key, device_key, NULL, &shared_secret_size);
 
-            byte *shared_secret = malloc(shared_secret_size);
-            r = crypto_curve25519_shared_secret(my_key, device_key, shared_secret, &shared_secret_size);
-            crypto_curve25519_free(my_key);
-            crypto_curve25519_free(device_key);
+                    byte *shared_secret = malloc(shared_secret_size);
+                    r = crypto_curve25519_shared_secret(my_key, device_key, shared_secret, &shared_secret_size);
+                    crypto_curve25519_free(my_key);
+                    crypto_curve25519_free(device_key);
 
-            if (r) {
-                CLIENT_ERROR(context, "Failed to generate Curve25519 shared secret (code %d)", r);
-                free(shared_secret);
-                free(my_key_public);
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to generate Curve25519 shared secret (code %d)", r);
+                        free(shared_secret);
+                        free(my_key_public);
+                        send_tlv_error_response(context, 2, TLVError_Unknown);
+                        break;
+                    }
 
-            CLIENT_DEBUG(context, "Generating signature");
-            size_t accessory_id_size = strlen(context->server->accessory_id);
-            size_t accessory_info_size = my_key_public_size + accessory_id_size + tlv_device_public_key->size;
+                    CLIENT_DEBUG(context, "Generating signature");
+                    size_t accessory_id_size = strlen(context->server->accessory_id);
+                    size_t accessory_info_size = my_key_public_size + accessory_id_size + tlv_device_public_key->size;
 
-            byte *accessory_info = malloc(accessory_info_size);
-            memcpy(accessory_info,
-                   my_key_public, my_key_public_size);
-            memcpy(accessory_info + my_key_public_size,
-                   context->server->accessory_id, accessory_id_size);
-            memcpy(accessory_info + my_key_public_size + accessory_id_size,
-                   tlv_device_public_key->value, tlv_device_public_key->size);
+                    byte *accessory_info = malloc(accessory_info_size);
+                    memcpy(accessory_info,
+                            my_key_public, my_key_public_size);
+                    memcpy(accessory_info + my_key_public_size,
+                            context->server->accessory_id, accessory_id_size);
+                    memcpy(accessory_info + my_key_public_size + accessory_id_size,
+                            tlv_device_public_key->value, tlv_device_public_key->size);
 
-            size_t accessory_signature_size = 0;
-            crypto_ed25519_sign(
-                context->server->accessory_key,
-                accessory_info, accessory_info_size,
-                NULL, &accessory_signature_size
-            );
+                    size_t accessory_signature_size = 0;
+                    crypto_ed25519_sign(
+                            context->server->accessory_key,
+                            accessory_info, accessory_info_size,
+                            NULL, &accessory_signature_size
+                            );
 
-            byte *accessory_signature = malloc(accessory_signature_size);
-            r = crypto_ed25519_sign(
-                context->server->accessory_key,
-                accessory_info, accessory_info_size,
-                accessory_signature, &accessory_signature_size
-            );
-            free(accessory_info);
-            if (r) {
-                CLIENT_ERROR(context, "Failed to generate signature (code %d)", r);
-                free(accessory_signature);
-                free(shared_secret);
-                free(my_key_public);
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
+                    byte *accessory_signature = malloc(accessory_signature_size);
+                    r = crypto_ed25519_sign(
+                            context->server->accessory_key,
+                            accessory_info, accessory_info_size,
+                            accessory_signature, &accessory_signature_size
+                            );
+                    free(accessory_info);
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to generate signature (code %d)", r);
+                        free(accessory_signature);
+                        free(shared_secret);
+                        free(my_key_public);
+                        send_tlv_error_response(context, 2, TLVError_Unknown);
+                        break;
+                    }
 
-            tlv_values_t *sub_response = tlv_new();
-            tlv_add_value(sub_response, TLVType_Identifier,
-                          (const byte *)context->server->accessory_id, accessory_id_size);
-            tlv_add_value(sub_response, TLVType_Signature,
-                          accessory_signature, accessory_signature_size);
+                    tlv_values_t *sub_response = tlv_new();
+                    tlv_add_value(sub_response, TLVType_Identifier,
+                            (const byte *)context->server->accessory_id, accessory_id_size);
+                    tlv_add_value(sub_response, TLVType_Signature,
+                            accessory_signature, accessory_signature_size);
 
-            free(accessory_signature);
+                    free(accessory_signature);
 
-            size_t sub_response_data_size = 0;
-            tlv_format(sub_response, NULL, &sub_response_data_size);
+                    size_t sub_response_data_size = 0;
+                    tlv_format(sub_response, NULL, &sub_response_data_size);
 
-            byte *sub_response_data = malloc(sub_response_data_size);
-            r = tlv_format(sub_response, sub_response_data, &sub_response_data_size);
-            tlv_free(sub_response);
+                    byte *sub_response_data = malloc(sub_response_data_size);
+                    r = tlv_format(sub_response, sub_response_data, &sub_response_data_size);
+                    tlv_free(sub_response);
 
-            if (r) {
-                CLIENT_ERROR(context, "Failed to format sub-TLV message (code %d)", r);
-                free(sub_response_data);
-                free(shared_secret);
-                free(my_key_public);
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to format sub-TLV message (code %d)", r);
+                        free(sub_response_data);
+                        free(shared_secret);
+                        free(my_key_public);
+                        send_tlv_error_response(context, 2, TLVError_Unknown);
+                        break;
+                    }
 
-            CLIENT_DEBUG(context, "Generating proof");
-            size_t session_key_size = 0;
-            const byte salt[] = "Pair-Verify-Encrypt-Salt";
-            const byte info[] = "Pair-Verify-Encrypt-Info";
-            crypto_hkdf(
-                shared_secret, shared_secret_size,
-                salt, sizeof(salt)-1,
-                info, sizeof(info)-1,
-                NULL, &session_key_size
-            );
+                    CLIENT_DEBUG(context, "Generating proof");
+                    size_t session_key_size = 0;
+                    const byte salt[] = "Pair-Verify-Encrypt-Salt";
+                    const byte info[] = "Pair-Verify-Encrypt-Info";
+                    crypto_hkdf(
+                            shared_secret, shared_secret_size,
+                            salt, sizeof(salt)-1,
+                            info, sizeof(info)-1,
+                            NULL, &session_key_size
+                            );
 
-            byte *session_key = malloc(session_key_size);
-            r = crypto_hkdf(
-                shared_secret, shared_secret_size,
-                salt, sizeof(salt)-1,
-                info, sizeof(info)-1,
-                session_key, &session_key_size
-            );
-            if (r) {
-                CLIENT_ERROR(context, "Failed to derive session key (code %d)", r);
-                free(session_key);
-                free(sub_response_data);
-                free(shared_secret);
-                free(my_key_public);
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
+                    byte *session_key = malloc(session_key_size);
+                    r = crypto_hkdf(
+                            shared_secret, shared_secret_size,
+                            salt, sizeof(salt)-1,
+                            info, sizeof(info)-1,
+                            session_key, &session_key_size
+                            );
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to derive session key (code %d)", r);
+                        free(session_key);
+                        free(sub_response_data);
+                        free(shared_secret);
+                        free(my_key_public);
+                        send_tlv_error_response(context, 2, TLVError_Unknown);
+                        break;
+                    }
 
-            CLIENT_DEBUG(context, "Encrypting response");
-            size_t encrypted_response_data_size = 0;
-            crypto_chacha20poly1305_encrypt(
-                session_key, (byte *)"\x0\x0\x0\x0PV-Msg02", NULL, 0,
-                sub_response_data, sub_response_data_size,
-                NULL, &encrypted_response_data_size
-            );
+                    CLIENT_DEBUG(context, "Encrypting response");
+                    size_t encrypted_response_data_size = 0;
+                    crypto_chacha20poly1305_encrypt(
+                            session_key, (byte *)"\x0\x0\x0\x0PV-Msg02", NULL, 0,
+                            sub_response_data, sub_response_data_size,
+                            NULL, &encrypted_response_data_size
+                            );
 
-            byte *encrypted_response_data = malloc(encrypted_response_data_size);
-            r = crypto_chacha20poly1305_encrypt(
-                session_key, (byte *)"\x0\x0\x0\x0PV-Msg02", NULL, 0,
-                sub_response_data, sub_response_data_size,
-                encrypted_response_data, &encrypted_response_data_size
-            );
-            free(sub_response_data);
+                    byte *encrypted_response_data = malloc(encrypted_response_data_size);
+                    r = crypto_chacha20poly1305_encrypt(
+                            session_key, (byte *)"\x0\x0\x0\x0PV-Msg02", NULL, 0,
+                            sub_response_data, sub_response_data_size,
+                            encrypted_response_data, &encrypted_response_data_size
+                            );
+                    free(sub_response_data);
 
-            if (r) {
-                CLIENT_ERROR(context, "Failed to encrypt sub response data (code %d)", r);
-                free(encrypted_response_data);
-                free(session_key);
-                free(shared_secret);
-                free(my_key_public);
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to encrypt sub response data (code %d)", r);
+                        free(encrypted_response_data);
+                        free(session_key);
+                        free(shared_secret);
+                        free(my_key_public);
+                        send_tlv_error_response(context, 2, TLVError_Unknown);
+                        break;
+                    }
 
-            tlv_values_t *response = tlv_new();
-            tlv_add_integer_value(response, TLVType_State, 1, 2);
-            tlv_add_value(response, TLVType_PublicKey,
-                          my_key_public, my_key_public_size);
-            tlv_add_value(response, TLVType_EncryptedData,
-                          encrypted_response_data, encrypted_response_data_size);
+                    tlv_values_t *response = tlv_new();
+                    tlv_add_integer_value(response, TLVType_State, 1, 2);
+                    tlv_add_value(response, TLVType_PublicKey,
+                            my_key_public, my_key_public_size);
+                    tlv_add_value(response, TLVType_EncryptedData,
+                            encrypted_response_data, encrypted_response_data_size);
 
-            free(encrypted_response_data);
+                    free(encrypted_response_data);
 
-            send_tlv_response(context, response);
+                    send_tlv_response(context, response);
 
-            if (context->verify_context)
-                pair_verify_context_free(context->verify_context);
+                    if (context->verify_context)
+                        pair_verify_context_free(context->verify_context);
 
-            context->verify_context = pair_verify_context_new();
-            context->verify_context->secret = shared_secret;
-            context->verify_context->secret_size = shared_secret_size;
+                    context->verify_context = pair_verify_context_new();
+                    context->verify_context->secret = shared_secret;
+                    context->verify_context->secret_size = shared_secret_size;
 
-            context->verify_context->session_key = session_key;
-            context->verify_context->session_key_size = session_key_size;
+                    context->verify_context->session_key = session_key;
+                    context->verify_context->session_key_size = session_key_size;
 
-            context->verify_context->accessory_public_key = my_key_public;
-            context->verify_context->accessory_public_key_size = my_key_public_size;
+                    context->verify_context->accessory_public_key = my_key_public;
+                    context->verify_context->accessory_public_key_size = my_key_public_size;
 
-            context->verify_context->device_public_key = malloc(tlv_device_public_key->size);
-            memcpy(context->verify_context->device_public_key,
-                   tlv_device_public_key->value, tlv_device_public_key->size);
-            context->verify_context->device_public_key_size = tlv_device_public_key->size;
+                    context->verify_context->device_public_key = malloc(tlv_device_public_key->size);
+                    memcpy(context->verify_context->device_public_key,
+                            tlv_device_public_key->value, tlv_device_public_key->size);
+                    context->verify_context->device_public_key_size = tlv_device_public_key->size;
 
-            break;
-        }
+                    break;
+                }
         case 3: {
-            CLIENT_INFO(context, "Pair Verify Step 2/2");
+                    CLIENT_INFO(context, "Pair Verify Step 2/2");
 
-            if (!context->verify_context) {
-                CLIENT_ERROR(context, "Failed to verify: no state 1 data");
-                send_tlv_error_response(context, 4, TLVError_Authentication);
-                break;
-            }
+                    if (!context->verify_context) {
+                        CLIENT_ERROR(context, "Failed to verify: no state 1 data");
+                        send_tlv_error_response(context, 4, TLVError_Authentication);
+                        break;
+                    }
 
-            tlv_t *tlv_encrypted_data = tlv_get_value(message, TLVType_EncryptedData);
-            if (!tlv_encrypted_data) {
-                CLIENT_ERROR(context, "Failed to verify: no encrypted data");
+                    tlv_t *tlv_encrypted_data = tlv_get_value(message, TLVType_EncryptedData);
+                    if (!tlv_encrypted_data) {
+                        CLIENT_ERROR(context, "Failed to verify: no encrypted data");
 
-                pair_verify_context_free(context->verify_context);
-                context->verify_context = NULL;
+                        pair_verify_context_free(context->verify_context);
+                        context->verify_context = NULL;
 
-                send_tlv_error_response(context, 4, TLVError_Authentication);
-                break;
-            }
+                        send_tlv_error_response(context, 4, TLVError_Authentication);
+                        break;
+                    }
 
-            CLIENT_DEBUG(context, "Decrypting payload");
-            size_t decrypted_data_size = 0;
-            crypto_chacha20poly1305_decrypt(
-                context->verify_context->session_key, (byte *)"\x0\x0\x0\x0PV-Msg03", NULL, 0,
-                tlv_encrypted_data->value, tlv_encrypted_data->size,
-                NULL, &decrypted_data_size
-            );
+                    CLIENT_DEBUG(context, "Decrypting payload");
+                    size_t decrypted_data_size = 0;
+                    crypto_chacha20poly1305_decrypt(
+                            context->verify_context->session_key, (byte *)"\x0\x0\x0\x0PV-Msg03", NULL, 0,
+                            tlv_encrypted_data->value, tlv_encrypted_data->size,
+                            NULL, &decrypted_data_size
+                            );
 
-            byte *decrypted_data = malloc(decrypted_data_size);
-            r = crypto_chacha20poly1305_decrypt(
-                context->verify_context->session_key, (byte *)"\x0\x0\x0\x0PV-Msg03", NULL, 0,
-                tlv_encrypted_data->value, tlv_encrypted_data->size,
-                decrypted_data, &decrypted_data_size
-            );
-            if (r) {
-                CLIENT_ERROR(context, "Failed to decrypt data (code %d)", r);
+                    byte *decrypted_data = malloc(decrypted_data_size);
+                    r = crypto_chacha20poly1305_decrypt(
+                            context->verify_context->session_key, (byte *)"\x0\x0\x0\x0PV-Msg03", NULL, 0,
+                            tlv_encrypted_data->value, tlv_encrypted_data->size,
+                            decrypted_data, &decrypted_data_size
+                            );
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to decrypt data (code %d)", r);
 
-                free(decrypted_data);
-                pair_verify_context_free(context->verify_context);
-                context->verify_context = NULL;
+                        free(decrypted_data);
+                        pair_verify_context_free(context->verify_context);
+                        context->verify_context = NULL;
 
-                send_tlv_error_response(context, 4, TLVError_Authentication);
-                break;
-            }
+                        send_tlv_error_response(context, 4, TLVError_Authentication);
+                        break;
+                    }
 
-            tlv_values_t *decrypted_message = tlv_new();
-            r = tlv_parse(decrypted_data, decrypted_data_size, decrypted_message);
-            free(decrypted_data);
+                    tlv_values_t *decrypted_message = tlv_new();
+                    r = tlv_parse(decrypted_data, decrypted_data_size, decrypted_message);
+                    free(decrypted_data);
 
-            if (r) {
-                CLIENT_ERROR(context, "Failed to parse decrypted TLV (code %d)", r);
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to parse decrypted TLV (code %d)", r);
 
-                tlv_free(decrypted_message);
-                pair_verify_context_free(context->verify_context);
-                context->verify_context = NULL;
+                        tlv_free(decrypted_message);
+                        pair_verify_context_free(context->verify_context);
+                        context->verify_context = NULL;
 
-                send_tlv_error_response(context, 4, TLVError_Authentication);
-                break;
-            }
+                        send_tlv_error_response(context, 4, TLVError_Authentication);
+                        break;
+                    }
 
-            tlv_t *tlv_device_id = tlv_get_value(decrypted_message, TLVType_Identifier);
-            if (!tlv_device_id) {
-                CLIENT_ERROR(context, "Invalid encrypted payload: no device identifier");
+                    tlv_t *tlv_device_id = tlv_get_value(decrypted_message, TLVType_Identifier);
+                    if (!tlv_device_id) {
+                        CLIENT_ERROR(context, "Invalid encrypted payload: no device identifier");
 
-                tlv_free(decrypted_message);
-                pair_verify_context_free(context->verify_context);
-                context->verify_context = NULL;
+                        tlv_free(decrypted_message);
+                        pair_verify_context_free(context->verify_context);
+                        context->verify_context = NULL;
 
-                send_tlv_error_response(context, 4, TLVError_Authentication);
-                break;
-            }
+                        send_tlv_error_response(context, 4, TLVError_Authentication);
+                        break;
+                    }
 
-            tlv_t *tlv_device_signature = tlv_get_value(decrypted_message, TLVType_Signature);
-            if (!tlv_device_signature) {
-                CLIENT_ERROR(context, "Invalid encrypted payload: no device identifier");
+                    tlv_t *tlv_device_signature = tlv_get_value(decrypted_message, TLVType_Signature);
+                    if (!tlv_device_signature) {
+                        CLIENT_ERROR(context, "Invalid encrypted payload: no device identifier");
 
-                tlv_free(decrypted_message);
-                pair_verify_context_free(context->verify_context);
-                context->verify_context = NULL;
+                        tlv_free(decrypted_message);
+                        pair_verify_context_free(context->verify_context);
+                        context->verify_context = NULL;
 
-                send_tlv_error_response(context, 4, TLVError_Authentication);
-                break;
-            }
+                        send_tlv_error_response(context, 4, TLVError_Authentication);
+                        break;
+                    }
 
-            char *device_id = strndup((const char *)tlv_device_id->value, tlv_device_id->size);
-            CLIENT_DEBUG(context, "Searching pairing with %s", device_id);
-            pairing_t *pairing = homekit_storage_find_pairing(device_id);
-            if (!pairing) {
-                CLIENT_ERROR(context, "No pairing for %s found", device_id);
+                    char *device_id = strndup((const char *)tlv_device_id->value, tlv_device_id->size);
+                    CLIENT_DEBUG(context, "Searching pairing with %s", device_id);
+                    pairing_t *pairing = homekit_storage_find_pairing(device_id);
+                    if (!pairing) {
+                        CLIENT_ERROR(context, "No pairing for %s found", device_id);
 
-                free(device_id);
-                tlv_free(decrypted_message);
-                pair_verify_context_free(context->verify_context);
-                context->verify_context = NULL;
+                        free(device_id);
+                        tlv_free(decrypted_message);
+                        pair_verify_context_free(context->verify_context);
+                        context->verify_context = NULL;
 
-                send_tlv_error_response(context, 4, TLVError_Authentication);
-                break;
-            }
+                        send_tlv_error_response(context, 4, TLVError_Authentication);
+                        break;
+                    }
 
-            CLIENT_INFO(context, "Found pairing with %s", device_id);
-            free(device_id);
+                    CLIENT_INFO(context, "Found pairing with %s", device_id);
+                    free(device_id);
 
-            byte permissions = pairing->permissions;
-            int pairing_id = pairing->id;
+                    byte permissions = pairing->permissions;
+                    int pairing_id = pairing->id;
 
-            size_t device_info_size =
-                context->verify_context->device_public_key_size +
-                context->verify_context->accessory_public_key_size +
-                tlv_device_id->size;
+                    size_t device_info_size =
+                        context->verify_context->device_public_key_size +
+                        context->verify_context->accessory_public_key_size +
+                        tlv_device_id->size;
 
-            byte *device_info = malloc(device_info_size);
-            memcpy(device_info,
-                   context->verify_context->device_public_key, context->verify_context->device_public_key_size);
-            memcpy(device_info + context->verify_context->device_public_key_size,
-                   tlv_device_id->value, tlv_device_id->size);
-            memcpy(device_info + context->verify_context->device_public_key_size + tlv_device_id->size,
-                   context->verify_context->accessory_public_key, context->verify_context->accessory_public_key_size);
+                    byte *device_info = malloc(device_info_size);
+                    memcpy(device_info,
+                            context->verify_context->device_public_key, context->verify_context->device_public_key_size);
+                    memcpy(device_info + context->verify_context->device_public_key_size,
+                            tlv_device_id->value, tlv_device_id->size);
+                    memcpy(device_info + context->verify_context->device_public_key_size + tlv_device_id->size,
+                            context->verify_context->accessory_public_key, context->verify_context->accessory_public_key_size);
 
-            CLIENT_DEBUG(context, "Verifying device signature");
-            r = crypto_ed25519_verify(
-                pairing->device_key,
-                device_info, device_info_size,
-                tlv_device_signature->value, tlv_device_signature->size
-            );
-            free(device_info);
-            pairing_free(pairing);
-            tlv_free(decrypted_message);
+                    CLIENT_DEBUG(context, "Verifying device signature");
+                    r = crypto_ed25519_verify(
+                            pairing->device_key,
+                            device_info, device_info_size,
+                            tlv_device_signature->value, tlv_device_signature->size
+                            );
+                    free(device_info);
+                    pairing_free(pairing);
+                    tlv_free(decrypted_message);
 
-            if (r) {
-                CLIENT_ERROR(context, "Failed to verify device signature (code %d)", r);
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to verify device signature (code %d)", r);
 
-                pair_verify_context_free(context->verify_context);
-                context->verify_context = NULL;
+                        pair_verify_context_free(context->verify_context);
+                        context->verify_context = NULL;
 
-                send_tlv_error_response(context, 4, TLVError_Authentication);
-                break;
-            }
+                        send_tlv_error_response(context, 4, TLVError_Authentication);
+                        break;
+                    }
 
-            const byte salt[] = "Control-Salt";
+                    const byte salt[] = "Control-Salt";
 
-            size_t read_key_size = 32;
-            context->read_key = malloc(read_key_size);
-            const byte read_info[] = "Control-Read-Encryption-Key";
-            r = crypto_hkdf(
-                context->verify_context->secret, context->verify_context->secret_size,
-                salt, sizeof(salt)-1,
-                read_info, sizeof(read_info)-1,
-                context->read_key, &read_key_size
-            );
+                    size_t read_key_size = 32;
+                    context->read_key = malloc(read_key_size);
+                    const byte read_info[] = "Control-Read-Encryption-Key";
+                    r = crypto_hkdf(
+                            context->verify_context->secret, context->verify_context->secret_size,
+                            salt, sizeof(salt)-1,
+                            read_info, sizeof(read_info)-1,
+                            context->read_key, &read_key_size
+                            );
 
-            if (r) {
-                CLIENT_ERROR(context, "Failed to derive read encryption key (code %d)", r);
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to derive read encryption key (code %d)", r);
 
-                free(context->read_key);
-                context->read_key = NULL;
-                pair_verify_context_free(context->verify_context);
-                context->verify_context = NULL;
+                        free(context->read_key);
+                        context->read_key = NULL;
+                        pair_verify_context_free(context->verify_context);
+                        context->verify_context = NULL;
 
-                send_tlv_error_response(context, 4, TLVError_Unknown);
-                break;
-            }
+                        send_tlv_error_response(context, 4, TLVError_Unknown);
+                        break;
+                    }
 
-            size_t write_key_size = 32;
-            context->write_key = malloc(write_key_size);
-            const byte write_info[] = "Control-Write-Encryption-Key";
-            r = crypto_hkdf(
-                context->verify_context->secret, context->verify_context->secret_size,
-                salt, sizeof(salt)-1,
-                write_info, sizeof(write_info)-1,
-                context->write_key, &write_key_size
-            );
+                    size_t write_key_size = 32;
+                    context->write_key = malloc(write_key_size);
+                    const byte write_info[] = "Control-Write-Encryption-Key";
+                    r = crypto_hkdf(
+                            context->verify_context->secret, context->verify_context->secret_size,
+                            salt, sizeof(salt)-1,
+                            write_info, sizeof(write_info)-1,
+                            context->write_key, &write_key_size
+                            );
 
-            pair_verify_context_free(context->verify_context);
-            context->verify_context = NULL;
+                    pair_verify_context_free(context->verify_context);
+                    context->verify_context = NULL;
 
-            if (r) {
-                CLIENT_ERROR(context, "Failed to derive write encryption key (code %d)", r);
+                    if (r) {
+                        CLIENT_ERROR(context, "Failed to derive write encryption key (code %d)", r);
 
-                free(context->write_key);
-                context->write_key = NULL;
-                free(context->read_key);
-                context->read_key = NULL;
+                        free(context->write_key);
+                        context->write_key = NULL;
+                        free(context->read_key);
+                        context->read_key = NULL;
 
-                send_tlv_error_response(context, 4, TLVError_Unknown);
-                break;
-            }
+                        send_tlv_error_response(context, 4, TLVError_Unknown);
+                        break;
+                    }
 
-            tlv_values_t *response = tlv_new();
-            tlv_add_integer_value(response, TLVType_State, 1, 4);
+                    tlv_values_t *response = tlv_new();
+                    tlv_add_integer_value(response, TLVType_State, 1, 4);
 
-            send_tlv_response(context, response);
+                    send_tlv_response(context, response);
 
-            context->pairing_id = pairing_id;
-            context->permissions = permissions;
-            context->encrypted = true;
+                    context->pairing_id = pairing_id;
+                    context->permissions = permissions;
+                    context->encrypted = true;
 
-            HOMEKIT_NOTIFY_EVENT(context->server, HOMEKIT_EVENT_CLIENT_VERIFIED);
+                    HOMEKIT_NOTIFY_EVENT(context->server, HOMEKIT_EVENT_CLIENT_VERIFIED);
 
-            CLIENT_INFO(context, "Verification successful, secure session established");
+                    CLIENT_INFO(context, "Verification successful, secure session established");
 
-            break;
-        }
+                    break;
+                }
         default: {
-            CLIENT_ERROR(context, "Unknown state: %d",
-                  tlv_get_integer_value(message, TLVType_State, -1));
-        }
+                     CLIENT_ERROR(context, "Unknown state: %d",
+                             tlv_get_integer_value(message, TLVType_State, -1));
+                 }
     }
 
     tlv_free(message);
@@ -2002,13 +2004,13 @@ void homekit_server_on_get_accessories(client_context_t *context) {
 
                 json_object_start(json);
                 write_characteristic_json(
-                    json, context, ch,
-                      characteristic_format_type
-                    | characteristic_format_meta
-                    | characteristic_format_perms
-                    | characteristic_format_events,
-                    NULL
-                );
+                        json, context, ch,
+                        characteristic_format_type
+                        | characteristic_format_meta
+                        | characteristic_format_perms
+                        | characteristic_format_events,
+                        NULL
+                        );
                 json_object_end(json);
             }
 
@@ -2029,6 +2031,19 @@ void homekit_server_on_get_accessories(client_context_t *context) {
     client_send_chunk(NULL, 0, context);
 }
 
+static bool bool_endpoint_param(const char *name, client_context_t* context) {
+    query_param_t *param = query_params_find(context->endpoint_params, name);
+    return param && param->value && !strcmp(param->value, "1");
+}
+
+static void write_characteristic_error(json_stream *json, int aid, int iid, int status) {
+    json_object_start(json);
+    json_string(json, "aid"); json_integer(json, aid);
+    json_string(json, "iid"); json_integer(json, iid);
+    json_string(json, "status"); json_integer(json, status);
+    json_object_end(json);
+}
+
 void homekit_server_on_get_characteristics(client_context_t *context) {
     CLIENT_INFO(context, "Get Characteristics");
     DEBUG_HEAP();
@@ -2046,22 +2061,17 @@ void homekit_server_on_get_characteristics(client_context_t *context) {
         return;
     }
 
-    bool bool_endpoint_param(const char *name) {
-        query_param_t *param = query_params_find(context->endpoint_params, name);
-        return param && param->value && !strcmp(param->value, "1");
-    }
-
     characteristic_format_t format = 0;
-    if (bool_endpoint_param("meta"))
+    if (bool_endpoint_param("meta", context))
         format |= characteristic_format_meta;
 
-    if (bool_endpoint_param("perms"))
+    if (bool_endpoint_param("perms", context))
         format |= characteristic_format_perms;
 
-    if (bool_endpoint_param("type"))
+    if (bool_endpoint_param("type", context))
         format |= characteristic_format_type;
 
-    if (bool_endpoint_param("ev"))
+    if (bool_endpoint_param("ev", context))
         format |= characteristic_format_events;
 
     bool success = true;
@@ -2107,13 +2117,6 @@ void homekit_server_on_get_characteristics(client_context_t *context) {
     json_object_start(json);
     json_string(json, "characteristics"); json_array_start(json);
 
-    void write_characteristic_error(json_stream *json, int aid, int iid, int status) {
-        json_object_start(json);
-        json_string(json, "aid"); json_integer(json, aid);
-        json_string(json, "iid"); json_integer(json, iid);
-        json_string(json, "status"); json_integer(json, status);
-        json_object_end(json);
-    }
 
     _id = id;
     while ((ch_id = strsep(&_id, ","))) {
@@ -2153,6 +2156,312 @@ void homekit_server_on_get_characteristics(client_context_t *context) {
     free(id);
 }
 
+static HAPStatus process_characteristics_update(const cJSON *j_ch, client_context_t *context) {
+    cJSON *j_aid = cJSON_GetObjectItem(j_ch, "aid");
+    if (!j_aid) {
+        CLIENT_ERROR(context, "Failed to process request: no \"aid\" field");
+        return HAPStatus_NoResource;
+    }
+    if (j_aid->type != cJSON_Number) {
+        CLIENT_ERROR(context, "Failed to process request: \"aid\" field is not a number");
+        return HAPStatus_NoResource;
+    }
+
+    cJSON *j_iid = cJSON_GetObjectItem(j_ch, "iid");
+    if (!j_iid) {
+        CLIENT_ERROR(context, "Failed to process request: no \"iid\" field");
+        return HAPStatus_NoResource;
+    }
+    if (j_iid->type != cJSON_Number) {
+        CLIENT_ERROR(context, "Failed to process request: \"iid\" field is not a number");
+        return HAPStatus_NoResource;
+    }
+
+    int aid = j_aid->valueint;
+    int iid = j_iid->valueint;
+
+    homekit_characteristic_t *ch = homekit_characteristic_by_aid_and_iid(
+            context->server->config->accessories, aid, iid
+            );
+    if (!ch) {
+        CLIENT_ERROR(context, "Failed to process request to update %d.%d: "
+                "no such characteristic", aid, iid);
+        return HAPStatus_NoResource;
+    }
+
+    cJSON *j_value = cJSON_GetObjectItem(j_ch, "value");
+    if (j_value) {
+        homekit_value_t h_value = HOMEKIT_NULL();
+
+        if (!(ch->permissions & homekit_permissions_paired_write)) {
+            CLIENT_ERROR(context, "Failed to update %d.%d: no write permission", aid, iid);
+            return HAPStatus_ReadOnly;
+        }
+
+        switch (ch->format) {
+            case homekit_format_bool: {
+                                          bool value = false;
+                                          if (j_value->type == cJSON_True) {
+                                              value = true;
+                                          } else if (j_value->type == cJSON_False) {
+                                              value = false;
+                                          } else if (j_value->type == cJSON_Number &&
+                                                  (j_value->valueint == 0 || j_value->valueint == 1)) {
+                                              value = j_value->valueint == 1;
+                                          } else {
+                                              CLIENT_ERROR(context, "Failed to update %d.%d: value is not a boolean or 0/1", aid, iid);
+                                              return HAPStatus_InvalidValue;
+                                          }
+
+                                          CLIENT_DEBUG(context, "Updating characteristic %d.%d with boolean %s", aid, iid, value ? "true" : "false");
+
+                                          h_value = HOMEKIT_BOOL(value);
+                                          if (ch->setter_ex) {
+                                              ch->setter_ex(ch, h_value);
+                                          } else {
+                                              ch->value = h_value;
+                                          }
+                                          break;
+                                      }
+            case homekit_format_uint8:
+            case homekit_format_uint16:
+            case homekit_format_uint32:
+            case homekit_format_uint64:
+            case homekit_format_int: {
+                                         // We accept boolean values here in order to fix a bug in HomeKit. HomeKit sometimes sends a boolean instead of an integer of value 0 or 1.
+                                         if (j_value->type != cJSON_Number && j_value->type != cJSON_False && j_value->type != cJSON_True) {
+                                             CLIENT_ERROR(context, "Failed to update %d.%d: value is not a number", aid, iid);
+                                             return HAPStatus_InvalidValue;
+                                         }
+
+                                         unsigned long long min_value = 0;
+                                         unsigned long long max_value = 0;
+
+                                         switch (ch->format) {
+                                             case homekit_format_uint8: {
+                                                                            min_value = 0;
+                                                                            max_value = 255;
+                                                                            break;
+                                                                        }
+                                             case homekit_format_uint16: {
+                                                                             min_value = 0;
+                                                                             max_value = 65535;
+                                                                             break;
+                                                                         }
+                                             case homekit_format_uint32: {
+                                                                             min_value = 0;
+                                                                             max_value = 4294967295;
+                                                                             break;
+                                                                         }
+                                             case homekit_format_uint64: {
+                                                                             min_value = 0;
+                                                                             max_value = 18446744073709551615ULL;
+                                                                             break;
+                                                                         }
+                                             case homekit_format_int: {
+                                                                          min_value = -2147483648;
+                                                                          max_value = 2147483647;
+                                                                          break;
+                                                                      }
+                                             default: {
+                                                          // Impossible, keeping to make compiler happy
+                                                          break;
+                                                      }
+                                         }
+
+                                         if (ch->min_value)
+                                             min_value = (int)*ch->min_value;
+                                         if (ch->max_value)
+                                             max_value = (int)*ch->max_value;
+
+                                         int value = j_value->valueint;
+                                         if (value < min_value || value > max_value) {
+                                             CLIENT_ERROR(context, "Failed to update %d.%d: value is not in range", aid, iid);
+                                             return HAPStatus_InvalidValue;
+                                         }
+
+                                         if (ch->valid_values.count) {
+                                             bool matches = false;
+                                             for (int i=0; i<ch->valid_values.count; i++) {
+                                                 if (value == ch->valid_values.values[i]) {
+                                                     matches = true;
+                                                     break;
+                                                 }
+                                             }
+
+                                             if (!matches) {
+                                                 CLIENT_ERROR(context, "Failed to update %d.%d: value is not one of valid values", aid, iid);
+                                                 return HAPStatus_InvalidValue;
+                                             }
+                                         }
+
+                                         if (ch->valid_values_ranges.count) {
+                                             bool matches = false;
+                                             for (int i=0; i<ch->valid_values_ranges.count; i++) {
+                                                 if (value >= ch->valid_values_ranges.ranges[i].start &&
+                                                         value <= ch->valid_values_ranges.ranges[i].end) {
+                                                     matches = true;
+                                                     break;
+                                                 }
+                                             }
+
+                                             if (!matches) {
+                                                 CLIENT_ERROR(context, "Failed to update %d.%d: value is not in valid values range", aid, iid);
+                                                 return HAPStatus_InvalidValue;
+                                             }
+                                         }
+
+                                         CLIENT_DEBUG(context, "Updating characteristic %d.%d with integer %d", aid, iid, value);
+
+                                         h_value = HOMEKIT_INT(value);
+                                         h_value.format = ch->format;
+                                         if (ch->setter_ex) {
+                                             ch->setter_ex(ch, h_value);
+                                         } else {
+                                             ch->value = h_value;
+                                         }
+                                         break;
+                                     }
+            case homekit_format_float: {
+                                           if (j_value->type != cJSON_Number) {
+                                               CLIENT_ERROR(context, "Failed to update %d.%d: value is not a number", aid, iid);
+                                               return HAPStatus_InvalidValue;
+                                           }
+
+                                           float value = j_value->valuedouble;
+                                           if ((ch->min_value && value < *ch->min_value) ||
+                                                   (ch->max_value && value > *ch->max_value)) {
+                                               CLIENT_ERROR(context, "Failed to update %d.%d: value is not in range", aid, iid);
+                                               return HAPStatus_InvalidValue;
+                                           }
+
+                                           CLIENT_DEBUG(context, "Updating characteristic %d.%d with %g", aid, iid, value);
+
+                                           h_value = HOMEKIT_FLOAT(value);
+                                           if (ch->setter_ex) {
+                                               ch->setter_ex(ch, h_value);
+                                           } else {
+                                               ch->value = h_value;
+                                           }
+                                           break;
+                                       }
+            case homekit_format_string: {
+                                            if (j_value->type != cJSON_String) {
+                                                CLIENT_ERROR(context, "Failed to update %d.%d: value is not a string", aid, iid);
+                                                return HAPStatus_InvalidValue;
+                                            }
+
+                                            int max_len = (ch->max_len) ? *ch->max_len : 64;
+
+                                            char *value = j_value->valuestring;
+                                            if (strlen(value) > max_len) {
+                                                CLIENT_ERROR(context, "Failed to update %d.%d: value is too long", aid, iid);
+                                                return HAPStatus_InvalidValue;
+                                            }
+
+                                            CLIENT_DEBUG(context, "Updating characteristic %d.%d with \"%s\"", aid, iid, value);
+
+                                            h_value = HOMEKIT_STRING(value);
+                                            if (ch->setter_ex) {
+                                                ch->setter_ex(ch, h_value);
+                                            } else {
+                                                homekit_value_destruct(&ch->value);
+                                                homekit_value_copy(&ch->value, &h_value);
+                                            }
+                                            break;
+                                        }
+            case homekit_format_tlv: {
+                                         if (j_value->type != cJSON_String) {
+                                             CLIENT_ERROR(context, "Failed to update %d.%d: value is not a string", aid, iid);
+                                             return HAPStatus_InvalidValue;
+                                         }
+
+                                         int max_len = (ch->max_len) ? *ch->max_len : 256;
+
+                                         char *value = j_value->valuestring;
+                                         size_t value_len = strlen(value);
+                                         if (value_len > max_len) {
+                                             CLIENT_ERROR(context, "Failed to update %d.%d: value is too long", aid, iid);
+                                             return HAPStatus_InvalidValue;
+                                         }
+
+                                         size_t tlv_size = base64_decoded_size((unsigned char*)value, value_len);
+                                         byte *tlv_data = malloc(tlv_size);
+                                         if (base64_decode((byte*) value, value_len, tlv_data) < 0) {
+                                             free(tlv_data);
+                                             CLIENT_ERROR(context, "Failed to update %d.%d: error Base64 decoding", aid, iid);
+                                             return HAPStatus_InvalidValue;
+                                         }
+
+                                         tlv_values_t *tlv_values = tlv_new();
+                                         int r = tlv_parse(tlv_data, tlv_size, tlv_values);
+                                         free(tlv_data);
+
+                                         if (r) {
+                                             CLIENT_ERROR(context, "Failed to update %d.%d: error parsing TLV", aid, iid);
+                                             return HAPStatus_InvalidValue;
+                                         }
+
+#if HOMEKIT_DEBUG
+                                         CLIENT_DEBUG(context, "Updating characteristic %d.%d with TLV:", aid, iid);
+                                         for (tlv_t *t=tlv_values->head; t; t=t->next) {
+                                             char *escaped_payload = binary_to_string(t->value, t->size);
+                                             CLIENT_DEBUG(context, "  Type %d value (%d bytes): %s", t->type, t->size, escaped_payload);
+                                             free(escaped_payload);
+                                         }
+#endif
+                                         h_value = HOMEKIT_TLV(tlv_values);
+                                         if (ch->setter_ex) {
+                                             ch->setter_ex(ch, h_value);
+                                         } else {
+                                             homekit_value_destruct(&ch->value);
+                                             homekit_value_copy(&ch->value, &h_value);
+                                         }
+
+                                         tlv_free(tlv_values);
+                                         break;
+                                     }
+            case homekit_format_data: {
+                                          // TODO:
+                                          break;
+                                      }
+        }
+
+        if (!h_value.is_null) {
+            context->current_characteristic = ch;
+            context->current_value = &h_value;
+
+            homekit_characteristic_notify(ch, h_value);
+
+            context->current_characteristic = NULL;
+            context->current_value = NULL;
+        }
+    }
+
+    cJSON *j_events = cJSON_GetObjectItem(j_ch, "ev");
+    if (j_events) {
+        if (!(ch->permissions & homekit_permissions_notify)) {
+            CLIENT_ERROR(context, "Failed to set notification state for %d.%d: "
+                    "notifications are not supported", aid, iid);
+            return HAPStatus_NotificationsUnsupported;
+        }
+
+        if ((j_events->type != cJSON_True) && (j_events->type != cJSON_False)) {
+            CLIENT_ERROR(context, "Failed to set notification state for %d.%d: "
+                    "invalid state value", aid, iid);
+        }
+
+        if (j_events->type == cJSON_True) {
+            homekit_characteristic_add_notify_callback(ch, client_notify_characteristic, context);
+        } else {
+            homekit_characteristic_remove_notify_callback(ch, client_notify_characteristic, context);
+        }
+    }
+
+    return HAPStatus_Success;
+}
+
+
 void homekit_server_on_update_characteristics(client_context_t *context, const byte *data, size_t size) {
     //printf(ANSI_COLOR(BG_WHITE,FG_RED) "Update Characteristics" ANSI_COLOR_RESET "\n");
     CLIENT_INFO(context, "Update Characteristics");
@@ -2182,310 +2491,6 @@ void homekit_server_on_update_characteristics(client_context_t *context, const b
         return;
     }
 
-    HAPStatus process_characteristics_update(const cJSON *j_ch) {
-        cJSON *j_aid = cJSON_GetObjectItem(j_ch, "aid");
-        if (!j_aid) {
-            CLIENT_ERROR(context, "Failed to process request: no \"aid\" field");
-            return HAPStatus_NoResource;
-        }
-        if (j_aid->type != cJSON_Number) {
-            CLIENT_ERROR(context, "Failed to process request: \"aid\" field is not a number");
-            return HAPStatus_NoResource;
-        }
-
-        cJSON *j_iid = cJSON_GetObjectItem(j_ch, "iid");
-        if (!j_iid) {
-            CLIENT_ERROR(context, "Failed to process request: no \"iid\" field");
-            return HAPStatus_NoResource;
-        }
-        if (j_iid->type != cJSON_Number) {
-            CLIENT_ERROR(context, "Failed to process request: \"iid\" field is not a number");
-            return HAPStatus_NoResource;
-        }
-
-        int aid = j_aid->valueint;
-        int iid = j_iid->valueint;
-
-        homekit_characteristic_t *ch = homekit_characteristic_by_aid_and_iid(
-            context->server->config->accessories, aid, iid
-        );
-        if (!ch) {
-            CLIENT_ERROR(context, "Failed to process request to update %d.%d: "
-                  "no such characteristic", aid, iid);
-            return HAPStatus_NoResource;
-        }
-
-        cJSON *j_value = cJSON_GetObjectItem(j_ch, "value");
-        if (j_value) {
-            homekit_value_t h_value = HOMEKIT_NULL();
-
-            if (!(ch->permissions & homekit_permissions_paired_write)) {
-                CLIENT_ERROR(context, "Failed to update %d.%d: no write permission", aid, iid);
-                return HAPStatus_ReadOnly;
-            }
-
-            switch (ch->format) {
-                case homekit_format_bool: {
-                    bool value = false;
-                    if (j_value->type == cJSON_True) {
-                        value = true;
-                    } else if (j_value->type == cJSON_False) {
-                        value = false;
-                    } else if (j_value->type == cJSON_Number &&
-                            (j_value->valueint == 0 || j_value->valueint == 1)) {
-                        value = j_value->valueint == 1;
-                    } else {
-                        CLIENT_ERROR(context, "Failed to update %d.%d: value is not a boolean or 0/1", aid, iid);
-                        return HAPStatus_InvalidValue;
-                    }
-
-                    CLIENT_DEBUG(context, "Updating characteristic %d.%d with boolean %s", aid, iid, value ? "true" : "false");
-
-                    h_value = HOMEKIT_BOOL(value);
-                    if (ch->setter_ex) {
-                        ch->setter_ex(ch, h_value);
-                    } else {
-                        ch->value = h_value;
-                    }
-                    break;
-                }
-                case homekit_format_uint8:
-                case homekit_format_uint16:
-                case homekit_format_uint32:
-                case homekit_format_uint64:
-                case homekit_format_int: {
-                    // We accept boolean values here in order to fix a bug in HomeKit. HomeKit sometimes sends a boolean instead of an integer of value 0 or 1.
-                    if (j_value->type != cJSON_Number && j_value->type != cJSON_False && j_value->type != cJSON_True) {
-                        CLIENT_ERROR(context, "Failed to update %d.%d: value is not a number", aid, iid);
-                        return HAPStatus_InvalidValue;
-                    }
-
-                    unsigned long long min_value = 0;
-                    unsigned long long max_value = 0;
-
-                    switch (ch->format) {
-                        case homekit_format_uint8: {
-                            min_value = 0;
-                            max_value = 255;
-                            break;
-                        }
-                        case homekit_format_uint16: {
-                            min_value = 0;
-                            max_value = 65535;
-                            break;
-                        }
-                        case homekit_format_uint32: {
-                            min_value = 0;
-                            max_value = 4294967295;
-                            break;
-                        }
-                        case homekit_format_uint64: {
-                            min_value = 0;
-                            max_value = 18446744073709551615ULL;
-                            break;
-                        }
-                        case homekit_format_int: {
-                            min_value = -2147483648;
-                            max_value = 2147483647;
-                            break;
-                        }
-                        default: {
-                            // Impossible, keeping to make compiler happy
-                            break;
-                        }
-                    }
-
-                    if (ch->min_value)
-                        min_value = (int)*ch->min_value;
-                    if (ch->max_value)
-                        max_value = (int)*ch->max_value;
-
-                    int value = j_value->valueint;
-                    if (value < min_value || value > max_value) {
-                        CLIENT_ERROR(context, "Failed to update %d.%d: value is not in range", aid, iid);
-                        return HAPStatus_InvalidValue;
-                    }
-
-                    if (ch->valid_values.count) {
-                        bool matches = false;
-                        for (int i=0; i<ch->valid_values.count; i++) {
-                            if (value == ch->valid_values.values[i]) {
-                                matches = true;
-                                break;
-                            }
-                        }
-
-                        if (!matches) {
-                            CLIENT_ERROR(context, "Failed to update %d.%d: value is not one of valid values", aid, iid);
-                            return HAPStatus_InvalidValue;
-                        }
-                    }
-
-                    if (ch->valid_values_ranges.count) {
-                        bool matches = false;
-                        for (int i=0; i<ch->valid_values_ranges.count; i++) {
-                            if (value >= ch->valid_values_ranges.ranges[i].start &&
-                                    value <= ch->valid_values_ranges.ranges[i].end) {
-                                matches = true;
-                                break;
-                            }
-                        }
-
-                        if (!matches) {
-                            CLIENT_ERROR(context, "Failed to update %d.%d: value is not in valid values range", aid, iid);
-                            return HAPStatus_InvalidValue;
-                        }
-                    }
-
-                    CLIENT_DEBUG(context, "Updating characteristic %d.%d with integer %d", aid, iid, value);
-
-                    h_value = HOMEKIT_INT(value);
-                    h_value.format = ch->format;
-                    if (ch->setter_ex) {
-                        ch->setter_ex(ch, h_value);
-                    } else {
-                        ch->value = h_value;
-                    }
-                    break;
-                }
-                case homekit_format_float: {
-                    if (j_value->type != cJSON_Number) {
-                        CLIENT_ERROR(context, "Failed to update %d.%d: value is not a number", aid, iid);
-                        return HAPStatus_InvalidValue;
-                    }
-
-                    float value = j_value->valuedouble;
-                    if ((ch->min_value && value < *ch->min_value) ||
-                            (ch->max_value && value > *ch->max_value)) {
-                        CLIENT_ERROR(context, "Failed to update %d.%d: value is not in range", aid, iid);
-                        return HAPStatus_InvalidValue;
-                    }
-
-                    CLIENT_DEBUG(context, "Updating characteristic %d.%d with %g", aid, iid, value);
-
-                    h_value = HOMEKIT_FLOAT(value);
-                    if (ch->setter_ex) {
-                        ch->setter_ex(ch, h_value);
-                    } else {
-                        ch->value = h_value;
-                    }
-                    break;
-                }
-                case homekit_format_string: {
-                    if (j_value->type != cJSON_String) {
-                        CLIENT_ERROR(context, "Failed to update %d.%d: value is not a string", aid, iid);
-                        return HAPStatus_InvalidValue;
-                    }
-
-                    int max_len = (ch->max_len) ? *ch->max_len : 64;
-
-                    char *value = j_value->valuestring;
-                    if (strlen(value) > max_len) {
-                        CLIENT_ERROR(context, "Failed to update %d.%d: value is too long", aid, iid);
-                        return HAPStatus_InvalidValue;
-                    }
-
-                    CLIENT_DEBUG(context, "Updating characteristic %d.%d with \"%s\"", aid, iid, value);
-
-                    h_value = HOMEKIT_STRING(value);
-                    if (ch->setter_ex) {
-                        ch->setter_ex(ch, h_value);
-                    } else {
-                        homekit_value_destruct(&ch->value);
-                        homekit_value_copy(&ch->value, &h_value);
-                    }
-                    break;
-                }
-                case homekit_format_tlv: {
-                    if (j_value->type != cJSON_String) {
-                        CLIENT_ERROR(context, "Failed to update %d.%d: value is not a string", aid, iid);
-                        return HAPStatus_InvalidValue;
-                    }
-
-                    int max_len = (ch->max_len) ? *ch->max_len : 256;
-
-                    char *value = j_value->valuestring;
-                    size_t value_len = strlen(value);
-                    if (value_len > max_len) {
-                        CLIENT_ERROR(context, "Failed to update %d.%d: value is too long", aid, iid);
-                        return HAPStatus_InvalidValue;
-                    }
-
-                    size_t tlv_size = base64_decoded_size((unsigned char*)value, value_len);
-                    byte *tlv_data = malloc(tlv_size);
-                    if (base64_decode((byte*) value, value_len, tlv_data) < 0) {
-                        free(tlv_data);
-                        CLIENT_ERROR(context, "Failed to update %d.%d: error Base64 decoding", aid, iid);
-                        return HAPStatus_InvalidValue;
-                    }
-
-                    tlv_values_t *tlv_values = tlv_new();
-                    int r = tlv_parse(tlv_data, tlv_size, tlv_values);
-                    free(tlv_data);
-
-                    if (r) {
-                        CLIENT_ERROR(context, "Failed to update %d.%d: error parsing TLV", aid, iid);
-                        return HAPStatus_InvalidValue;
-                    }
-
-                    CLIENT_DEBUG(context, "Updating characteristic %d.%d with TLV:", aid, iid);
-                    for (tlv_t *t=tlv_values->head; t; t=t->next) {
-                        char *escaped_payload = binary_to_string(t->value, t->size);
-                        CLIENT_DEBUG(context, "  Type %d value (%d bytes): %s", t->type, t->size, escaped_payload);
-                        free(escaped_payload);
-                    }
-
-                    h_value = HOMEKIT_TLV(tlv_values);
-                    if (ch->setter_ex) {
-                        ch->setter_ex(ch, h_value);
-                    } else {
-                        homekit_value_destruct(&ch->value);
-                        homekit_value_copy(&ch->value, &h_value);
-                    }
-
-                    tlv_free(tlv_values);
-                    break;
-                }
-                case homekit_format_data: {
-                    // TODO:
-                    break;
-                }
-            }
-
-            if (!h_value.is_null) {
-                context->current_characteristic = ch;
-                context->current_value = &h_value;
-
-                homekit_characteristic_notify(ch, h_value);
-
-                context->current_characteristic = NULL;
-                context->current_value = NULL;
-            }
-        }
-
-        cJSON *j_events = cJSON_GetObjectItem(j_ch, "ev");
-        if (j_events) {
-            if (!(ch->permissions && homekit_permissions_notify)) {
-                CLIENT_ERROR(context, "Failed to set notification state for %d.%d: "
-                      "notifications are not supported", aid, iid);
-                return HAPStatus_NotificationsUnsupported;
-            }
-
-            if ((j_events->type != cJSON_True) && (j_events->type != cJSON_False)) {
-                CLIENT_ERROR(context, "Failed to set notification state for %d.%d: "
-                      "invalid state value", aid, iid);
-            }
-
-            if (j_events->type == cJSON_True) {
-                homekit_characteristic_add_notify_callback(ch, client_notify_characteristic, context);
-            } else {
-                homekit_characteristic_remove_notify_callback(ch, client_notify_characteristic, context);
-            }
-        }
-
-        return HAPStatus_Success;
-    }
-
     HAPStatus *statuses = malloc(sizeof(HAPStatus) * cJSON_GetArraySize(characteristics));
     bool has_errors = false;
     for (int i=0; i < cJSON_GetArraySize(characteristics); i++) {
@@ -2495,7 +2500,7 @@ void homekit_server_on_update_characteristics(client_context_t *context, const b
         CLIENT_DEBUG(context, "Processing element %s", s);
         free(s);
 
-        statuses[i] = process_characteristics_update(j_ch);
+        statuses[i] = process_characteristics_update(j_ch, context);
 
         if (statuses[i] != HAPStatus_Success)
             has_errors = true;
@@ -2555,248 +2560,249 @@ void homekit_server_on_pairings(client_context_t *context, const byte *data, siz
 
     switch(tlv_get_integer_value(message, TLVType_Method, -1)) {
         case TLVMethod_AddPairing: {
-            CLIENT_INFO(context, "Add Pairing");
+                                       CLIENT_INFO(context, "Add Pairing");
 
-            if (!(context->permissions & pairing_permissions_admin)) {
-                CLIENT_ERROR(context, "Refusing to add pairing to non-admin controller");
-                send_tlv_error_response(context, 2, TLVError_Authentication);
-                break;
-            }
+                                       if (!(context->permissions & pairing_permissions_admin)) {
+                                           CLIENT_ERROR(context, "Refusing to add pairing to non-admin controller");
+                                           send_tlv_error_response(context, 2, TLVError_Authentication);
+                                           break;
+                                       }
 
-            tlv_t *tlv_device_identifier = tlv_get_value(message, TLVType_Identifier);
-            if (!tlv_device_identifier) {
-                CLIENT_ERROR(context, "Invalid add pairing request: no device identifier");
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
-            tlv_t *tlv_device_public_key = tlv_get_value(message, TLVType_PublicKey);
-            if (!tlv_device_public_key) {
-                CLIENT_ERROR(context, "Invalid add pairing request: no device public key");
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
-            int device_permissions = tlv_get_integer_value(message, TLVType_Permissions, -1);
-            if (device_permissions == -1) {
-                CLIENT_ERROR(context, "Invalid add pairing request: no device permissions");
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
+                                       tlv_t *tlv_device_identifier = tlv_get_value(message, TLVType_Identifier);
+                                       if (!tlv_device_identifier) {
+                                           CLIENT_ERROR(context, "Invalid add pairing request: no device identifier");
+                                           send_tlv_error_response(context, 2, TLVError_Unknown);
+                                           break;
+                                       }
+                                       tlv_t *tlv_device_public_key = tlv_get_value(message, TLVType_PublicKey);
+                                       if (!tlv_device_public_key) {
+                                           CLIENT_ERROR(context, "Invalid add pairing request: no device public key");
+                                           send_tlv_error_response(context, 2, TLVError_Unknown);
+                                           break;
+                                       }
+                                       int device_permissions = tlv_get_integer_value(message, TLVType_Permissions, -1);
+                                       if (device_permissions == -1) {
+                                           CLIENT_ERROR(context, "Invalid add pairing request: no device permissions");
+                                           send_tlv_error_response(context, 2, TLVError_Unknown);
+                                           break;
+                                       }
 
-            ed25519_key *device_key = crypto_ed25519_new();
-            r = crypto_ed25519_import_public_key(
-                device_key, tlv_device_public_key->value, tlv_device_public_key->size
-            );
-            if (r) {
-                CLIENT_ERROR(context, "Failed to import device public key");
-                crypto_ed25519_free(device_key);
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
+                                       ed25519_key *device_key = crypto_ed25519_new();
+                                       r = crypto_ed25519_import_public_key(
+                                               device_key, tlv_device_public_key->value, tlv_device_public_key->size
+                                               );
+                                       if (r) {
+                                           CLIENT_ERROR(context, "Failed to import device public key");
+                                           crypto_ed25519_free(device_key);
+                                           send_tlv_error_response(context, 2, TLVError_Unknown);
+                                           break;
+                                       }
 
-            char *device_identifier = strndup(
-                (const char *)tlv_device_identifier->value,
-                tlv_device_identifier->size
-            );
+                                       char *device_identifier = strndup(
+                                               (const char *)tlv_device_identifier->value,
+                                               tlv_device_identifier->size
+                                               );
 
-            pairing_t *pairing = homekit_storage_find_pairing(device_identifier);
-            if (pairing) {
-                size_t pairing_public_key_size = 0;
-                crypto_ed25519_export_public_key(pairing->device_key, NULL, &pairing_public_key_size);
+                                       pairing_t *pairing = homekit_storage_find_pairing(device_identifier);
+                                       if (pairing) {
+                                           size_t pairing_public_key_size = 0;
+                                           crypto_ed25519_export_public_key(pairing->device_key, NULL, &pairing_public_key_size);
 
-                byte *pairing_public_key = malloc(pairing_public_key_size);
-                r = crypto_ed25519_export_public_key(pairing->device_key, pairing_public_key, &pairing_public_key_size);
-                if (r) {
-                    CLIENT_ERROR(context, "Failed to add pairing: error exporting pairing public key (code %d)", r);
-                    free(pairing_public_key);
-                    pairing_free(pairing);
-                    free(device_identifier);
-                    crypto_ed25519_free(device_key);
-                    send_tlv_error_response(context, 2, TLVError_Unknown);
-                }
+                                           byte *pairing_public_key = malloc(pairing_public_key_size);
+                                           r = crypto_ed25519_export_public_key(pairing->device_key, pairing_public_key, &pairing_public_key_size);
+                                           if (r) {
+                                               CLIENT_ERROR(context, "Failed to add pairing: error exporting pairing public key (code %d)", r);
+                                               free(pairing_public_key);
+                                               pairing_free(pairing);
+                                               free(device_identifier);
+                                               crypto_ed25519_free(device_key);
+                                               send_tlv_error_response(context, 2, TLVError_Unknown);
+                                           }
 
-                pairing_free(pairing);
+                                           pairing_free(pairing);
 
-                if (pairing_public_key_size != tlv_device_public_key->size ||
-                        memcmp(tlv_device_public_key->value, pairing_public_key, pairing_public_key_size)) {
-                    CLIENT_ERROR(context, "Failed to add pairing: pairing public key differs from given one");
-                    free(pairing_public_key);
-                    free(device_identifier);
-                    crypto_ed25519_free(device_key);
-                    send_tlv_error_response(context, 2, TLVError_Unknown);
-                }
+                                           if (pairing_public_key_size != tlv_device_public_key->size ||
+                                                   memcmp(tlv_device_public_key->value, pairing_public_key, pairing_public_key_size)) {
+                                               CLIENT_ERROR(context, "Failed to add pairing: pairing public key differs from given one");
+                                               free(pairing_public_key);
+                                               free(device_identifier);
+                                               crypto_ed25519_free(device_key);
+                                               send_tlv_error_response(context, 2, TLVError_Unknown);
+                                           }
 
-                free(pairing_public_key);
+                                           free(pairing_public_key);
 
-                r = homekit_storage_update_pairing(device_identifier, device_permissions);
-                if (r) {
-                    CLIENT_ERROR(context, "Failed to add pairing: storage error (code %d)", r);
-                    free(device_identifier);
-                    crypto_ed25519_free(device_key);
-                    send_tlv_error_response(context, 2, TLVError_Unknown);
-                    break;
-                }
+                                           r = homekit_storage_update_pairing(device_identifier, device_permissions);
+                                           if (r) {
+                                               CLIENT_ERROR(context, "Failed to add pairing: storage error (code %d)", r);
+                                               free(device_identifier);
+                                               crypto_ed25519_free(device_key);
+                                               send_tlv_error_response(context, 2, TLVError_Unknown);
+                                               break;
+                                           }
 
-                INFO("Updated pairing with %s", device_identifier);
-            } else {
-                if (!homekit_storage_can_add_pairing()) {
-                    CLIENT_ERROR(context, "Failed to add pairing: max peers");
-                    free(device_identifier);
-                    crypto_ed25519_free(device_key);
-                    send_tlv_error_response(context, 2, TLVError_MaxPeers);
-                    break;
-                }
+                                           INFO("Updated pairing with %s", device_identifier);
+                                       } else {
+#if 0
+                                           if (!homekit_storage_can_add_pairing()) {
+                                               CLIENT_ERROR(context, "Failed to add pairing: max peers");
+                                               free(device_identifier);
+                                               crypto_ed25519_free(device_key);
+                                               send_tlv_error_response(context, 2, TLVError_MaxPeers);
+                                               break;
+                                           }
+#endif
+                                           r = homekit_storage_add_pairing(
+                                                   device_identifier, device_key, device_permissions
+                                                   );
+                                           if (r) {
+                                               CLIENT_ERROR(context, "Failed to add pairing: storage error (code %d)", r);
+                                               free(device_identifier);
+                                               crypto_ed25519_free(device_key);
+                                               send_tlv_error_response(context, 2, TLVError_Unknown);
+                                               break;
+                                           }
 
-                r = homekit_storage_add_pairing(
-                    device_identifier, device_key, device_permissions
-                );
-                if (r) {
-                    CLIENT_ERROR(context, "Failed to add pairing: storage error (code %d)", r);
-                    free(device_identifier);
-                    crypto_ed25519_free(device_key);
-                    send_tlv_error_response(context, 2, TLVError_Unknown);
-                    break;
-                }
+                                           INFO("Added pairing with %s", device_identifier);
 
-                INFO("Added pairing with %s", device_identifier);
+                                           HOMEKIT_NOTIFY_EVENT(context->server, HOMEKIT_EVENT_PAIRING_ADDED);
+                                       }
 
-                HOMEKIT_NOTIFY_EVENT(context->server, HOMEKIT_EVENT_PAIRING_ADDED);
-            }
+                                       free(device_identifier);
+                                       crypto_ed25519_free(device_key);
 
-            free(device_identifier);
-            crypto_ed25519_free(device_key);
+                                       tlv_values_t *response = tlv_new();
+                                       tlv_add_integer_value(response, TLVType_State, 1, 2);
 
-            tlv_values_t *response = tlv_new();
-            tlv_add_integer_value(response, TLVType_State, 1, 2);
+                                       send_tlv_response(context, response);
 
-            send_tlv_response(context, response);
-
-            break;
-        }
+                                       break;
+                                   }
         case TLVMethod_RemovePairing: {
-            CLIENT_INFO(context, "Remove Pairing");
+                                          CLIENT_INFO(context, "Remove Pairing");
 
-            if (!(context->permissions & pairing_permissions_admin)) {
-                CLIENT_ERROR(context, "Refusing to remove pairing to non-admin controller");
-                send_tlv_error_response(context, 2, TLVError_Authentication);
-                break;
-            }
+                                          if (!(context->permissions & pairing_permissions_admin)) {
+                                              CLIENT_ERROR(context, "Refusing to remove pairing to non-admin controller");
+                                              send_tlv_error_response(context, 2, TLVError_Authentication);
+                                              break;
+                                          }
 
-            tlv_t *tlv_device_identifier = tlv_get_value(message, TLVType_Identifier);
-            if (!tlv_device_identifier) {
-                CLIENT_ERROR(context, "Invalid remove pairing request: no device identifier");
-                send_tlv_error_response(context, 2, TLVError_Unknown);
-                break;
-            }
+                                          tlv_t *tlv_device_identifier = tlv_get_value(message, TLVType_Identifier);
+                                          if (!tlv_device_identifier) {
+                                              CLIENT_ERROR(context, "Invalid remove pairing request: no device identifier");
+                                              send_tlv_error_response(context, 2, TLVError_Unknown);
+                                              break;
+                                          }
 
-            char *device_identifier = strndup(
-                (const char *)tlv_device_identifier->value,
-                tlv_device_identifier->size
-            );
+                                          char *device_identifier = strndup(
+                                                  (const char *)tlv_device_identifier->value,
+                                                  tlv_device_identifier->size
+                                                  );
 
-            pairing_t *pairing = homekit_storage_find_pairing(device_identifier);
+                                          pairing_t *pairing = homekit_storage_find_pairing(device_identifier);
 
-            if (pairing) {
-                bool is_admin = pairing->permissions & pairing_permissions_admin;
-                pairing_free(pairing);
+                                          if (pairing) {
+                                              bool is_admin = pairing->permissions & pairing_permissions_admin;
+                                              pairing_free(pairing);
 
-                r = homekit_storage_remove_pairing(device_identifier);
-                if (r) {
-                    CLIENT_ERROR(context, "Failed to remove pairing: storage error (code %d)", r);
-                    free(device_identifier);
-                    send_tlv_error_response(context, 2, TLVError_Unknown);
-                    break;
-                }
+                                              r = homekit_storage_remove_pairing(device_identifier);
+                                              if (r) {
+                                                  CLIENT_ERROR(context, "Failed to remove pairing: storage error (code %d)", r);
+                                                  free(device_identifier);
+                                                  send_tlv_error_response(context, 2, TLVError_Unknown);
+                                                  break;
+                                              }
 
-                INFO("Removed pairing with %s", device_identifier);
+                                              INFO("Removed pairing with %s", device_identifier);
 
-                HOMEKIT_NOTIFY_EVENT(context->server, HOMEKIT_EVENT_PAIRING_REMOVED);
+                                              HOMEKIT_NOTIFY_EVENT(context->server, HOMEKIT_EVENT_PAIRING_REMOVED);
 
-                client_context_t *c = context->server->clients;
-                while (c) {
-                    if (c->pairing_id == pairing->id)
-                        c->disconnect = true;
-                    c = c->next;
-                }
+                                              client_context_t *c = context->server->clients;
+                                              while (c) {
+                                                  if (c->pairing_id == pairing->id)
+                                                      c->disconnect = true;
+                                                  c = c->next;
+                                              }
 
-                if (is_admin) {
-                    // Removed pairing was admin,
-                    // check if there any other admins left.
-                    // If no admins left, enable pairing again
-                    pairing_iterator_t *pairing_it = homekit_storage_pairing_iterator();
-                    pairing_t *pairing;
-                    while ((pairing = homekit_storage_next_pairing(pairing_it))) {
-                        if (pairing->permissions & pairing_permissions_admin) {
-                            break;
-                        }
-                        pairing_free(pairing);
-                    };
-                    homekit_storage_pairing_iterator_free(pairing_it);
+                                              if (is_admin) {
+                                                  // Removed pairing was admin,
+                                                  // check if there any other admins left.
+                                                  // If no admins left, enable pairing again
+                                                  pairing_iterator_t *pairing_it = homekit_storage_pairing_iterator();
+                                                  pairing_t *pairing;
+                                                  while ((pairing = homekit_storage_next_pairing(pairing_it))) {
+                                                      if (pairing->permissions & pairing_permissions_admin) {
+                                                          break;
+                                                      }
+                                                      pairing_free(pairing);
+                                                  };
+                                                  homekit_storage_pairing_iterator_free(pairing_it);
 
-                    if (!pairing) {
-                        // No admins left, enable pairing again
-                        INFO("Last admin pairing was removed, enabling pair setup");
+                                                  if (!pairing) {
+                                                      // No admins left, enable pairing again
+                                                      INFO("Last admin pairing was removed, enabling pair setup");
 
-                        context->server->paired = false;
-                        homekit_setup_mdns(context->server);
-                    } else {
-                        pairing_free(pairing);
-                    }
-                }
-            }
+                                                      context->server->paired = false;
+                                                      homekit_setup_mdns(context->server);
+                                                  } else {
+                                                      pairing_free(pairing);
+                                                  }
+                                              }
+                                          }
 
-            free(device_identifier);
+                                          free(device_identifier);
 
-            tlv_values_t *response = tlv_new();
-            tlv_add_integer_value(response, TLVType_State, 1, 2);
+                                          tlv_values_t *response = tlv_new();
+                                          tlv_add_integer_value(response, TLVType_State, 1, 2);
 
-            send_tlv_response(context, response);
-            break;
-        }
+                                          send_tlv_response(context, response);
+                                          break;
+                                      }
         case TLVMethod_ListPairings: {
-            CLIENT_INFO(context, "List Pairings");
+                                         CLIENT_INFO(context, "List Pairings");
 
-            if (!(context->permissions & pairing_permissions_admin)) {
-                CLIENT_INFO(context, "Refusing to list pairings to non-admin controller");
-                send_tlv_error_response(context, 2, TLVError_Authentication);
-                break;
-            }
+                                         if (!(context->permissions & pairing_permissions_admin)) {
+                                             CLIENT_INFO(context, "Refusing to list pairings to non-admin controller");
+                                             send_tlv_error_response(context, 2, TLVError_Authentication);
+                                             break;
+                                         }
 
-            tlv_values_t *response = tlv_new();
-            tlv_add_integer_value(response, TLVType_State, 1, 2);
+                                         tlv_values_t *response = tlv_new();
+                                         tlv_add_integer_value(response, TLVType_State, 1, 2);
 
-            bool first = true;
+                                         bool first = true;
 
-            pairing_iterator_t *it = homekit_storage_pairing_iterator();
-            pairing_t *pairing = NULL;
+                                         pairing_iterator_t *it = homekit_storage_pairing_iterator();
+                                         pairing_t *pairing = NULL;
 
-            size_t public_key_size = 32;
-            byte *public_key = malloc(public_key_size);
+                                         size_t public_key_size = 32;
+                                         byte *public_key = malloc(public_key_size);
 
-            while ((pairing = homekit_storage_next_pairing(it))) {
-                if (!first) {
-                    tlv_add_value(response, TLVType_Separator, NULL, 0);
-                }
-                r = crypto_ed25519_export_public_key(pairing->device_key, public_key, &public_key_size);
+                                         while ((pairing = homekit_storage_next_pairing(it))) {
+                                             if (!first) {
+                                                 tlv_add_value(response, TLVType_Separator, NULL, 0);
+                                             }
+                                             r = crypto_ed25519_export_public_key(pairing->device_key, public_key, &public_key_size);
 
-                tlv_add_string_value(response, TLVType_Identifier, pairing->device_id);
-                tlv_add_value(response, TLVType_PublicKey, public_key, public_key_size);
-                tlv_add_integer_value(response, TLVType_Permissions, 1, pairing->permissions);
+                                             tlv_add_string_value(response, TLVType_Identifier, pairing->device_id);
+                                             tlv_add_value(response, TLVType_PublicKey, public_key, public_key_size);
+                                             tlv_add_integer_value(response, TLVType_Permissions, 1, pairing->permissions);
 
-                first = false;
+                                             first = false;
 
-                pairing_free(pairing);
-            }
-            homekit_storage_pairing_iterator_free(it);
+                                             pairing_free(pairing);
+                                         }
+                                         homekit_storage_pairing_iterator_free(it);
 
-            free(public_key);
+                                         free(public_key);
 
-            send_tlv_response(context, response);
-            break;
-        }
+                                         send_tlv_response(context, response);
+                                         break;
+                                     }
         default: {
-            send_tlv_error_response(context, 2, TLVError_Unknown);
-            break;
-        }
+                     send_tlv_error_response(context, 2, TLVError_Unknown);
+                     break;
+                 }
     }
 
     tlv_free(message);
@@ -2820,7 +2826,7 @@ void homekit_server_on_resource(client_context_t *context) {
         return;
     }
 
-    uint8_t* path = context->server->config->on_resource(context->body, context->body_length);
+    char* path = context->server->config->on_resource(context->body, context->body_length);
 
     //do mmap
     struct stat sb;
@@ -2843,8 +2849,8 @@ void homekit_server_on_resource(client_context_t *context) {
         printf("can not mmap %s\n", path);
         goto end1;
     }
-    
-    uint8_t* http_headers = malloc(1024);
+
+    char* http_headers = malloc(1024);
     int header_len = snprintf(http_headers, 1024,
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: image/jpeg\r\n"
@@ -2853,6 +2859,8 @@ void homekit_server_on_resource(client_context_t *context) {
 
     client_send(context, http_headers, header_len);
     client_send(context, fmap, sb.st_size);
+
+    free(http_headers);
 
     munmap(fmap, sb.st_size);
 end1:
@@ -2928,50 +2936,50 @@ int homekit_server_on_message_complete(http_parser *parser) {
 
     switch(context->endpoint) {
         case HOMEKIT_ENDPOINT_PAIR_SETUP: {
-            homekit_server_on_pair_setup(context, (const byte *)context->body, context->body_length);
-            break;
-        }
+                                              homekit_server_on_pair_setup(context, (const byte *)context->body, context->body_length);
+                                              break;
+                                          }
         case HOMEKIT_ENDPOINT_PAIR_VERIFY: {
-            homekit_server_on_pair_verify(context, (const byte *)context->body, context->body_length);
-            break;
-        }
+                                               homekit_server_on_pair_verify(context, (const byte *)context->body, context->body_length);
+                                               break;
+                                           }
         case HOMEKIT_ENDPOINT_IDENTIFY: {
-            homekit_server_on_identify(context);
-            break;
-        }
+                                            homekit_server_on_identify(context);
+                                            break;
+                                        }
         case HOMEKIT_ENDPOINT_GET_ACCESSORIES: {
-            homekit_server_on_get_accessories(context);
-            break;
-        }
+                                                   homekit_server_on_get_accessories(context);
+                                                   break;
+                                               }
         case HOMEKIT_ENDPOINT_GET_CHARACTERISTICS: {
-            homekit_server_on_get_characteristics(context);
-            break;
-        }
+                                                       homekit_server_on_get_characteristics(context);
+                                                       break;
+                                                   }
         case HOMEKIT_ENDPOINT_UPDATE_CHARACTERISTICS: {
-            homekit_server_on_update_characteristics(context, (const byte *)context->body, context->body_length);
-            break;
-        }
+                                                          homekit_server_on_update_characteristics(context, (const byte *)context->body, context->body_length);
+                                                          break;
+                                                      }
         case HOMEKIT_ENDPOINT_PAIRINGS: {
-            homekit_server_on_pairings(context, (const byte *)context->body, context->body_length);
-            break;
-        }
+                                            homekit_server_on_pairings(context, (const byte *)context->body, context->body_length);
+                                            break;
+                                        }
         case HOMEKIT_ENDPOINT_RESET: {
-            homekit_server_on_reset(context);
-            break;
-        }
+                                         homekit_server_on_reset(context);
+                                         break;
+                                     }
         case HOMEKIT_ENDPOINT_RESOURCE: {
-            homekit_server_on_resource(context);
-            break;
-        }
+                                            homekit_server_on_resource(context);
+                                            break;
+                                        }
         case HOMEKIT_ENDPOINT_UNKNOWN: {
-            DEBUG("Unknown endpoint");
-            send_404_response(context);
-            break;
-        }
+                                           DEBUG("Unknown endpoint");
+                                           send_404_response(context);
+                                           break;
+                                       }
         default:
-        {
-            ERROR("unhandled endpoint request %d\n", context->endpoint);
-        }
+                                       {
+                                           ERROR("unhandled endpoint request %d\n", context->endpoint);
+                                       }
     }
 
     if (context->endpoint_params) {
@@ -2998,10 +3006,10 @@ static http_parser_settings homekit_http_parser_settings = {
 
 static void homekit_client_process(client_context_t *context) {
     int data_len = read(
-        context->socket,
-        context->data+context->data_available,
-        context->data_size-context->data_available
-    );
+            context->socket,
+            context->data+context->data_available,
+            context->data_size-context->data_available
+            );
     if (data_len == 0) {
         context->disconnect = true;
         return;
@@ -3051,9 +3059,9 @@ static void homekit_client_process(client_context_t *context) {
     current_client_context = context;
 
     http_parser_execute(
-        context->parser, &homekit_http_parser_settings,
-        (char *)payload, payload_size
-    );
+            context->parser, &homekit_http_parser_settings,
+            (char *)payload, payload_size
+            );
 
     current_client_context = NULL;
 
@@ -3090,10 +3098,10 @@ void homekit_server_close_client(homekit_server_t *server, client_context_t *con
     }
 
     homekit_accessories_clear_notify_callbacks(
-        context->server->config->accessories,
-        client_notify_characteristic,
-        context
-    );
+            context->server->config->accessories,
+            client_notify_characteristic,
+            context
+            );
 
     HOMEKIT_NOTIFY_EVENT(server, HOMEKIT_EVENT_CLIENT_DISCONNECTED);
 
@@ -3312,7 +3320,7 @@ void homekit_setup_mdns(homekit_server_t *server) {
         homekit_service_characteristic_by_type(accessory_info, HOMEKIT_CHARACTERISTIC_NAME);
     if (!name) {
         ERROR("Invalid accessory declaration: "
-              "no Name characteristic in AccessoryInfo service");
+                "no Name characteristic in AccessoryInfo service");
         return;
     }
 
@@ -3320,18 +3328,18 @@ void homekit_setup_mdns(homekit_server_t *server) {
         homekit_service_characteristic_by_type(accessory_info, HOMEKIT_CHARACTERISTIC_MODEL);
     if (!model) {
         ERROR("Invalid accessory declaration: "
-              "no Model characteristic in AccessoryInfo service");
+                "no Model characteristic in AccessoryInfo service");
         return;
     }
 
     char unique_name[65]={0};
     /*
-    strncpy(unique_name, name->value.string_value, sizeof(unique_name)-6);
-    unique_name[strlen(unique_name)]='-';
-    unique_name[strlen(unique_name)]=server->accessory_id[0];
-    unique_name[strlen(unique_name)]=server->accessory_id[1];
-    unique_name[strlen(unique_name)]=server->accessory_id[3];
-    unique_name[strlen(unique_name)]=server->accessory_id[4];*/
+       strncpy(unique_name, name->value.string_value, sizeof(unique_name)-6);
+       unique_name[strlen(unique_name)]='-';
+       unique_name[strlen(unique_name)]=server->accessory_id[0];
+       unique_name[strlen(unique_name)]=server->accessory_id[1];
+       unique_name[strlen(unique_name)]=server->accessory_id[3];
+       unique_name[strlen(unique_name)]=server->accessory_id[4];*/
     gethostname(unique_name, 65);
     homekit_mdns_configure_init(unique_name, PORT);
 
@@ -3391,7 +3399,7 @@ char *homekit_accessory_id_generate() {
     homekit_random_fill(buf, sizeof(buf));
 
     snprintf(accessory_id, 18, "%02X:%02X:%02X:%02X:%02X:%02X",
-             buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
+            buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
 
     INFO("Generated new accessory ID: %s", accessory_id);
     return accessory_id;
@@ -3459,13 +3467,13 @@ void homekit_server_task(void *args) {
 void homekit_server_init(homekit_server_config_t *config) {
     if (!config->accessories) {
         ERROR("Error initializing HomeKit accessory server: "
-              "accessories are not specified");
+                "accessories are not specified");
         return;
     }
 
     if (!config->password && !config->password_callback) {
         ERROR("Error initializing HomeKit accessory server: "
-              "neither password nor password callback is specified");
+                "neither password nor password callback is specified");
         return;
     }
 
@@ -3476,7 +3484,7 @@ void homekit_server_init(homekit_server_config_t *config) {
                     ISDIGIT(p[4]) && ISDIGIT(p[5]) && p[6] == '-' &&
                     ISDIGIT(p[7]) && ISDIGIT(p[8]) && ISDIGIT(p[9]))) {
             ERROR("Error initializing HomeKit accessory server: "
-                  "invalid password format");
+                    "invalid password format");
             return;
         }
     }
@@ -3486,7 +3494,7 @@ void homekit_server_init(homekit_server_config_t *config) {
         if (strlen(p) != 4 ||
                 !(ISBASE36(p[0]) && ISBASE36(p[1]) && ISBASE36(p[2]) && ISBASE36(p[3]))) {
             ERROR("Error initializing HomeKit accessory server: "
-                  "invalid setup ID format");
+                    "invalid setup ID format");
             return;
         }
     }

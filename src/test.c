@@ -21,10 +21,10 @@ void led_identify(homekit_value_t _value) {
 }
 
 //what is this???
-uint8_t* handle_resource(const char *body, size_t body_size)
+char* handle_resource(const char *body, size_t body_size)
 {
     printf("handle resource : %s\n", body);
-    uint8_t buffer[128];
+    char buffer[128];
     int w,h;
     sscanf(body, "{\"image-width\":%d,\"image-height\":%d,\"resource-type\":\"image\"}", &w, &h);
     snprintf(buffer,128,
@@ -73,6 +73,7 @@ void cam_selected_rtp_stream_cfg_set(homekit_characteristic_t *ch, const homekit
     printf(ANSI_COLOR(BG_WHITE, FG_RED)
             "TODO: cam_selected_rtp_stream_cfg_set"
             ANSI_COLOR_RESET "\n");
+    homekit_value_destruct(&ch->value);
     homekit_value_copy(&(ch->value), &value);
     //tlv_debug(value.tlv_values);
     tlv_values_t* session_control_and_command = tlv_get_tlv_value(value.tlv_values, 1);
@@ -141,6 +142,8 @@ homekit_value_t cam_supported_video_cfg_get(const homekit_characteristic_t *ch)
 
     tlv_add_tlv_value(part1, 2, codec_parameters);
 
+    tlv_free(codec_parameters);
+
     //video attributes
     //width, height, fps
     int resolutions[9][3] = {
@@ -166,6 +169,7 @@ homekit_value_t cam_supported_video_cfg_get(const homekit_characteristic_t *ch)
         tlv_add_tlv_value(part1, 3, video_attribute);
     }
     tlv_add_tlv_value(r, 1, part1);
+    tlv_free(part1);
 
     return HOMEKIT_TLV(r);
 }
@@ -196,6 +200,9 @@ homekit_value_t cam_supported_audio_cfg_get(const homekit_characteristic_t *ch)
 
     tlv_add_tlv_value(r, 1, codec_opus24);
 
+    tlv_free(codec_param_opus24);
+    tlv_free(codec_opus24);
+
     //-------add aac-eld-16 - 2 byte length is wrong???
     tlv_values_t * codec_acceld16 = tlv_new();
     tlv_add_integer_value(codec_acceld16, 1, 1*sizeof(uint8_t), 2);
@@ -212,6 +219,8 @@ homekit_value_t cam_supported_audio_cfg_get(const homekit_characteristic_t *ch)
     tlv_add_tlv_value(codec_acceld16, 2, codec_param_aaceld16);
 
     tlv_add_tlv_value(r, 1, codec_acceld16);
+    tlv_free(codec_param_aaceld16);
+    tlv_free(codec_acceld16);
 
     //part 2 - comfort noise support - no support - 0
     tlv_add_integer_value(r, 2, sizeof(uint8_t), 0);
@@ -274,6 +283,7 @@ homekit_value_t cam_setup_endpoints_get(const homekit_characteristic_t *ch)
     //audio rtp port
     tlv_add_integer_value(address, 4, 2*sizeof(uint8_t), cam_get_artp_port());
     tlv_add_tlv_value(r, 3, address);
+    tlv_free(address);
 
     //Video SRTP
     tlv_values_t* vsrtp = tlv_get_tlv_value(v, 4);
@@ -298,17 +308,19 @@ homekit_value_t cam_setup_endpoints_get(const homekit_characteristic_t *ch)
 
 void cam_setup_endpoints_set(homekit_characteristic_t *ch, const homekit_value_t value)
 {
-    printf(ANSI_COLOR(BG_WHITE, FG_RED)
-            "cam_setup_endpoints_set"
-            ANSI_COLOR_RESET "\n");
+    //printf(ANSI_COLOR(BG_WHITE, FG_RED)
+    //        "cam_setup_endpoints_set"
+    //        ANSI_COLOR_RESET "\n");
 
+    homekit_value_destruct(&ch->value);
     homekit_value_copy(&(ch->value), &value);
 
     //tlv_debug(value.tlv_values);
 
     tlv_values_t* controller_addr = tlv_get_tlv_value(value.tlv_values, 3);
     //tlv_debug(controller_addr);
-    uint8_t *controller_ip = tlv_get_value(controller_addr, 2)->value;
+    tlv_t* controller_ip_tlv = tlv_get_value(controller_addr, 2);
+    uint8_t *controller_ip = controller_ip_tlv->value;
     uint16_t vrtp_port = tlv_get_integer_value(controller_addr, 3, 0x0000);
     uint16_t artp_port = tlv_get_integer_value(controller_addr, 4, 0x0000);
 
@@ -318,7 +330,11 @@ void cam_setup_endpoints_set(homekit_characteristic_t *ch, const homekit_value_t
     //Audio SRTP
     tlv_values_t* asrtp = tlv_get_tlv_value(value.tlv_values, 5);
 
-    cam_prepare(artp_port, vrtp_port, controller_ip,
+    uint8_t ipdup[16];
+    memcpy(ipdup, controller_ip, controller_ip_tlv->size);
+    ipdup[controller_ip_tlv->size] = '\0';
+
+    cam_prepare(artp_port, vrtp_port, ipdup,
             tlv_get_value(vsrtp,2)->value, tlv_get_value(vsrtp,3)->value,
             tlv_get_value(asrtp,2)->value, tlv_get_value(asrtp,3)->value);
 

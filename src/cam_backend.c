@@ -42,7 +42,7 @@ void cam_prepare(uint16_t _artp_port, uint16_t _vrtp_port, uint8_t* _ip,
         uint8_t* _vrtp_master_key, uint8_t* _vrtp_master_salt,
         uint8_t* _artp_master_key, uint8_t* _artp_master_salt)
 {
-    printf("cam_prepare: %s rtp ports: a,%d v,%d\n", _ip, _artp_port, _vrtp_port);
+    //printf("cam_prepare: %s rtp ports: a,%d v,%d\n", _ip, _artp_port, _vrtp_port);
 
     strncpy(controller_ip, _ip, 16);
 
@@ -56,7 +56,7 @@ void cam_prepare(uint16_t _artp_port, uint16_t _vrtp_port, uint8_t* _ip,
     vssrc = homekit_random() & 0x00FFFFFF;
     assrc = homekit_random() & 0x00FFFFFF;
 
-    printf("vssrc=%u, assrc=%u\n", vssrc, assrc);
+    //printf("vssrc=%u, assrc=%u\n", vssrc, assrc);
 
     _cam_status = CAM_INITIALIZED;
 }

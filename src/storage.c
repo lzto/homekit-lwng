@@ -8,11 +8,13 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <pwd.h>
+#include <assert.h>
 
 #include "debug.h"
 #include "crypto.h"
 #include "pairing.h"
 #include "port.h"
+#include "base64.h"
 
 #include <cJSON.h>
 
@@ -42,7 +44,7 @@ int homekit_storage_init() {
     strcat(CFG, CFG_SUFFIX);
 
     FILE* file;
-    if (file = fopen(CFG, "r"))
+    if ((file = fopen(CFG, "r")))
     {
         fclose(file);
         return 0;
@@ -69,7 +71,7 @@ cJSON* load_cfg()
     if (fmap == MAP_FAILED)
         goto end2;
     //parse and get result
-    lwng_json = cJSON_Parse(fmap);
+    lwng_json = cJSON_Parse((const char*)fmap);
     if (!lwng_json)
     {
         goto end3;
@@ -102,7 +104,8 @@ bool store_cfg(cJSON* lwng_json)
     return true;
 }
 ////////////////////////////////////////////////////////////////////////////////
-bool store_property(const uint8_t* k, const uint8_t* v, size_t vlen)
+//only char allowed
+static bool write_property(const char* k, const char* v, size_t vlen)
 {
     bool ret = false;
     cJSON *lwng_json = load_cfg();
@@ -119,7 +122,7 @@ fail1:
     return ret;
 }
 
-bool read_property(const uint8_t* k, uint8_t* v, size_t vlen)
+static bool read_property(const char* k, char* v, size_t vlen)
 {
     bool ret = false;
     cJSON* lwng_json = load_cfg();
@@ -136,7 +139,7 @@ fail1:
     return ret;
 }
 
-bool append_array_property(const uint8_t* k, const uint8_t* v, size_t vlen)
+bool append_array_property(const char* k, const char* v, size_t vlen)
 {
     //printf("append_array_property %s=%s\n", k, v);
     bool ret = false;
@@ -162,9 +165,12 @@ bool append_array_property(const uint8_t* k, const uint8_t* v, size_t vlen)
 end1:
     return ret;
 }
-
+////////////////////////////////////////////////////////////////////////////////
+/*
+ * accessory ID, these are plain text
+ */
 void homekit_storage_save_accessory_id(const char *accessory_id) {
-    if (!store_property(ACCESSORY_ID, (byte *)accessory_id, strlen(accessory_id))) {
+    if (!write_property(ACCESSORY_ID, (byte *)accessory_id, strlen(accessory_id))) {
         ERROR("Failed to write accessory ID to flash");
     }
 }
@@ -194,7 +200,9 @@ char *homekit_storage_load_accessory_id() {
 
     return strndup((char *)data, sizeof(data));
 }
-
+/*
+ * accessory key - encode base64
+ */
 void homekit_storage_save_accessory_key(const ed25519_key *key) {
     byte key_data[ACCESSORY_KEY_SIZE];
     size_t key_data_size = sizeof(key_data);
@@ -203,61 +211,57 @@ void homekit_storage_save_accessory_key(const ed25519_key *key) {
         ERROR("Failed to export accessory key (code %d)", r);
         return;
     }
+    size_t encoded_size = base64_encoded_size(key_data, ACCESSORY_KEY_SIZE);
+    unsigned char* encoded_data = malloc(encoded_size+1);
+    base64_encode(key_data, ACCESSORY_KEY_SIZE, encoded_data);
+    encoded_data[encoded_size] = '\0';
 
-    if (!store_property(ACCESSORY_KEY, key_data, key_data_size)) {
+    if (!write_property(ACCESSORY_KEY, encoded_data, encoded_size)) {
+        free(encoded_data);
         ERROR("Failed to write accessory key to flash");
         return;
     }
+    free(encoded_data);
 }
 
 ed25519_key *homekit_storage_load_accessory_key() {
     byte key_data[ACCESSORY_KEY_SIZE];
-    if (!read_property(ACCESSORY_KEY, key_data, sizeof(key_data))) {
+    unsigned char* encoded_data = malloc(1024);
+
+    if (!read_property(ACCESSORY_KEY, encoded_data, 1024)) {
         ERROR("Failed to read accessory key from flash");
+        free(encoded_data);
         return NULL;
     }
+
+    size_t decoded_size = base64_decoded_size(encoded_data, strlen(encoded_data));
+    assert(decoded_size==ACCESSORY_KEY_SIZE);
+    base64_decode(encoded_data, strlen(encoded_data), (unsigned char*)key_data);
 
     ed25519_key *key = crypto_ed25519_new();
     int r = crypto_ed25519_import_key(key, key_data, sizeof(key_data));
     if (r) {
         ERROR("Failed to import accessory key (code %d)", r);
         crypto_ed25519_free(key);
+        free(encoded_data);
         return NULL;
     }
 
+    free(encoded_data);
     return key;
 }
 
+/*
+ * pairing data
+ */
 typedef struct {
-    char device_id[36];
+    char device_id[37];
     byte device_public_key[32];
     byte permissions;
 } pairing_data_t;
 
-
 bool homekit_storage_can_add_pairing() {
-    pairing_data_t* data;
-    bool ret = false;
-    cJSON* lwng_json = load_cfg();
-    if (!lwng_json)
-        goto end1;
-
-    cJSON *array = cJSON_GetObjectItemCaseSensitive(lwng_json, PAIRINGS);
-    cJSON *element;
-    cJSON_ArrayForEach(element, array)
-    {
-        cJSON* value = cJSON_GetObjectItemCaseSensitive(element, PAIRINGS);
-        if (cJSON_IsString(value) && (value->valuestring != NULL))
-        {
-            data = (pairing_data_t*) value->valuestring;
-            ret = true;
-            goto end2;
-        }
-    }
-end2:
-    cJSON_Delete(lwng_json);
-end1:
-    return ret;
+    return true;
 }
 
 int homekit_storage_add_pairing(const char *device_id, const ed25519_key *device_key, byte permissions) {
@@ -274,19 +278,24 @@ int homekit_storage_add_pairing(const char *device_id, const ed25519_key *device
         ERROR("Failed to export device public key (code %d)", r);
         return -1;
     }
-
-    if (!append_array_property(PAIRINGS, (byte *)&data, sizeof(data))) {
+    //NOTE: data should be base64 encoded
+    size_t encoded_size = base64_encoded_size(((byte*)&data), sizeof(pairing_data_t));
+    unsigned char* encoded_data = malloc(encoded_size+1);
+    base64_encode((byte*)&data, sizeof(pairing_data_t), encoded_data);
+    encoded_data[encoded_size]='\0';
+    if (!append_array_property(PAIRINGS, encoded_data, encoded_size)) {
+        free(encoded_data);
         ERROR("Failed to write pairing info to flash");
         return -1;
     }
-
+    free(encoded_data);
     return 0;
 }
 
 
 int homekit_storage_update_pairing(const char *device_id, byte permissions) {
 
-    pairing_data_t* data;
+    pairing_data_t data;
     bool ret = false;
     cJSON* lwng_json = load_cfg();
     if (!lwng_json)
@@ -300,32 +309,40 @@ int homekit_storage_update_pairing(const char *device_id, byte permissions) {
         cJSON* value = cJSON_GetObjectItemCaseSensitive(element, PAIRINGS);
         if (cJSON_IsString(value) && (value->valuestring != NULL))
         {
-            data = (pairing_data_t*) value->valuestring;
+            size_t decoded_size
+                = base64_decoded_size((const unsigned char*)value->valuestring,
+                        strlen(value->valuestring));
+            assert(decoded_size==sizeof(pairing_data_t));
+            base64_decode(value->valuestring, strlen(value->valuestring), (unsigned char*)&data);
 
-            if (!strncmp(data->device_id, device_id, sizeof(data->device_id))) {
+            if (!strncmp(data.device_id, device_id, sizeof(data.device_id))) {
                 ed25519_key *device_key = crypto_ed25519_new();
                 int r = crypto_ed25519_import_public_key(device_key,
-                        data->device_public_key, 
-                        sizeof(data->device_public_key));
+                        data.device_public_key, 
+                        sizeof(data.device_public_key));
                 if (r) {
                     ERROR("Failed to import device public key (code %d)", r);
                     crypto_ed25519_free(device_key);
+                    cJSON_Delete(lwng_json);
                     return -2;
                 }
 
-                size_t device_public_key_size = sizeof(data->device_public_key);
+                size_t device_public_key_size = sizeof(data.device_public_key);
                 r = crypto_ed25519_export_public_key(
-                        device_key, data->device_public_key, &device_public_key_size
+                        device_key, data.device_public_key, &device_public_key_size
                         );
                 if (r) {
                     ERROR("Failed to export device public key (code %d)", r);
+                    cJSON_Delete(lwng_json);
                     return -1;
                 }
 
-                data->permissions = permissions;
+                data.permissions = permissions;
+                base64_encode((unsigned char*)&data, sizeof(pairing_data_t), value->valuestring);
 
                 crypto_ed25519_free(device_key);
                 if (r) {
+                    cJSON_Delete(lwng_json);
                     return -2;
                 }
                 store_cfg(lwng_json);
@@ -335,12 +352,13 @@ int homekit_storage_update_pairing(const char *device_id, byte permissions) {
         }
     }
 end1:
+    cJSON_Delete(lwng_json);
     return -1;
 }
 
 
 int homekit_storage_remove_pairing(const char *device_id) {
-    pairing_data_t* data;
+    pairing_data_t data;
     bool ret = false;
     cJSON* lwng_json = load_cfg();
     if (!lwng_json)
@@ -354,16 +372,21 @@ int homekit_storage_remove_pairing(const char *device_id) {
         cJSON* value = cJSON_GetObjectItemCaseSensitive(element, PAIRINGS);
         if (cJSON_IsString(value) && (value->valuestring != NULL))
         {
-            data = (pairing_data_t*) value->valuestring;
+            size_t decoded_size
+                = base64_decoded_size((const unsigned char*)value->valuestring,
+                        strlen(value->valuestring));
+            assert(decoded_size==sizeof(pairing_data_t));
+            base64_decode(value->valuestring, strlen(value->valuestring), (unsigned char*)&data);
 
             //FIXME! have problem???
-            if (!strncmp(data->device_id, device_id, sizeof(data->device_id))) {
+            if (!strncmp(data.device_id, device_id, sizeof(data.device_id))) {
                 cJSON_DeleteItemFromArray(array,i);
-                i--;
+                goto end;
             }
         }
         i++;
     }
+end:
     store_cfg(lwng_json);
     cJSON_Delete(lwng_json);
 
@@ -374,7 +397,7 @@ end1:
 
 
 pairing_t *homekit_storage_find_pairing(const char *device_id) {
-    pairing_data_t* data;
+    pairing_data_t data;
     bool ret = false;
     cJSON* lwng_json = load_cfg();
     if (!lwng_json)
@@ -388,22 +411,27 @@ pairing_t *homekit_storage_find_pairing(const char *device_id) {
         cJSON* value = cJSON_GetObjectItemCaseSensitive(element, PAIRINGS);
         if (cJSON_IsString(value) && (value->valuestring != NULL))
         {
-            data = (pairing_data_t*) value->valuestring;
+            size_t decoded_size
+                = base64_decoded_size((const unsigned char*)value->valuestring,
+                        strlen(value->valuestring));
+            assert(decoded_size==sizeof(pairing_data_t));
+            base64_decode(value->valuestring, strlen(value->valuestring), (unsigned char*)&data);
 
-            if (!strncmp(data->device_id, device_id, sizeof(data->device_id))) {
+            if (!strncmp(data.device_id, device_id, sizeof(data.device_id))) {
                 ed25519_key *device_key = crypto_ed25519_new();
                 int r = crypto_ed25519_import_public_key(device_key,
-                        data->device_public_key, sizeof(data->device_public_key));
+                        data.device_public_key, sizeof(data.device_public_key));
                 if (r) {
                     ERROR("Failed to import device public key (code %d)", r);
+                    cJSON_Delete(lwng_json);
                     return NULL;
                 }
 
                 pairing_t *pairing = pairing_new();
                 pairing->id = i;
-                pairing->device_id = strndup(data->device_id, sizeof(data->device_id));
+                pairing->device_id = strndup(data.device_id, sizeof(data.device_id));
                 pairing->device_key = device_key;
-                pairing->permissions = data->permissions;
+                pairing->permissions = data.permissions;
                 cJSON_Delete(lwng_json);
                 return pairing;
             }
@@ -436,7 +464,7 @@ void homekit_storage_pairing_iterator_free(pairing_iterator_t *iterator) {
 
 
 pairing_t *homekit_storage_next_pairing(pairing_iterator_t *it) {
-    pairing_data_t* data;
+    pairing_data_t data;
     bool ret = false;
     cJSON* lwng_json = load_cfg();
     if (!lwng_json)
@@ -457,23 +485,26 @@ pairing_t *homekit_storage_next_pairing(pairing_iterator_t *it) {
         cJSON* value = cJSON_GetObjectItemCaseSensitive(element, PAIRINGS);
         if (cJSON_IsString(value) && (value->valuestring != NULL))
         {
-            data = (pairing_data_t*) value->valuestring;
+            size_t decoded_size
+                = base64_decoded_size((const unsigned char*)value->valuestring,
+                        strlen(value->valuestring));
+            assert(decoded_size==sizeof(pairing_data_t));
+            base64_decode(value->valuestring, strlen(value->valuestring), (unsigned char*)&data);
 
             ed25519_key *device_key = crypto_ed25519_new();
             int r = crypto_ed25519_import_public_key(device_key,
-                    data->device_public_key, sizeof(data->device_public_key));
+                    data.device_public_key, sizeof(data.device_public_key));
             if (r) {
                 ERROR("Failed to import device public key (code %d)", r);
                 crypto_ed25519_free(device_key);
                 it->idx++;
                 continue;
             }
-
             pairing_t *pairing = pairing_new();
             pairing->id = id;
-            pairing->device_id = strndup(data->device_id, sizeof(data->device_id));
+            pairing->device_id = strndup(data.device_id, sizeof(data.device_id));
             pairing->device_key = device_key;
-            pairing->permissions = data->permissions;
+            pairing->permissions = data.permissions;
             cJSON_Delete(lwng_json);
             return pairing;
         }

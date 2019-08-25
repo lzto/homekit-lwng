@@ -227,7 +227,7 @@ void tlv_debug(const tlv_values_t *values) {
     printf("Got following TLV values:\n");
     for (tlv_t *t=values->head; t; t=t->next) {
         char *escaped_payload = binary_to_string(t->value, t->size);
-        printf("  Type %d value (%d bytes): %s\n", t->type, t->size, escaped_payload);
+        printf("  Type %d value (%zu bytes): %s\n", t->type, t->size, escaped_payload);
         free(escaped_payload);
     }
 }
@@ -236,7 +236,7 @@ void tlv_t_debug(const tlv_t *values) {
     printf("Got following TLV values:\n");
     for (const tlv_t *t=values; t; t=t->next) {
         char *escaped_payload = binary_to_string(t->value, t->size);
-        printf("  Type %d value (%d bytes): %s\n", t->type, t->size, escaped_payload);
+        printf("  Type %d value (%zu bytes): %s\n", t->type, t->size, escaped_payload);
         free(escaped_payload);
     }
 }

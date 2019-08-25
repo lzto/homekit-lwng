@@ -202,10 +202,16 @@ void json_array_end(json_stream *json) {
 void json_integer(json_stream *json, long long x) {
     if (json->state == JSON_STATE_ERROR)
         return;
-
+    //fix this for clang
+#if 0
     void _do_write() {
         json_write(json, "%ld", x);
     }
+#else
+#undef _do_write
+#define _do_write() \
+        json_write(json, "%ld", x)
+#endif
 
     switch (json->state) {
         case JSON_STATE_START:
@@ -232,11 +238,15 @@ void json_integer(json_stream *json, long long x) {
 void json_float(json_stream *json, float x) {
     if (json->state == JSON_STATE_ERROR)
         return;
-
+#if 0
     void _do_write() {
         json_write(json, "%1.15g", x);
     }
-
+#else
+#undef _do_write
+#define _do_write() \
+    json_write(json, "%1.15g", x)
+#endif
     switch (json->state) {
         case JSON_STATE_START:
             _do_write();
@@ -262,12 +272,16 @@ void json_float(json_stream *json, float x) {
 void json_string(json_stream *json, const char *x) {
     if (json->state == JSON_STATE_ERROR)
         return;
-
+#if 0
     void _do_write() {
         // TODO: escape string
         json_write(json, "\"%s\"", x);
     }
-
+#else
+#undef _do_write
+#define _do_write() \
+    json_write(json, "\"%s\"", x)
+#endif
     switch (json->state) {
         case JSON_STATE_START:
             _do_write();
@@ -300,10 +314,15 @@ void json_string(json_stream *json, const char *x) {
 void json_boolean(json_stream *json, bool x) {
     if (json->state == JSON_STATE_ERROR)
         return;
-
+#if 0
     void _do_write() {
         json_write(json, (x) ? "true" : "false");
     }
+#else
+#undef _do_write
+#define _do_write() \
+    json_write(json, (x) ? "true" : "false")
+#endif
 
     switch (json->state) {
         case JSON_STATE_START:
@@ -330,10 +349,15 @@ void json_boolean(json_stream *json, bool x) {
 void json_null(json_stream *json) {
     if (json->state == JSON_STATE_ERROR)
         return;
-
+#if 0
     void _do_write() {
         json_write(json, "null");
     }
+#else
+#undef _do_write
+#define _do_write()\
+    json_write(json, "null")
+#endif
 
     switch (json->state) {
         case JSON_STATE_START:

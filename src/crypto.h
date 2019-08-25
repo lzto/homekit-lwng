@@ -2,6 +2,7 @@
 #define __CRYPTO_H__
 
 #include <stdlib.h>
+#include <stdint.h>
 
 typedef unsigned char byte;
 
