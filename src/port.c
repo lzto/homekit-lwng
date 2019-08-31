@@ -29,7 +29,7 @@
 
 uint32_t homekit_random() {
     static bool initialized = false;
-    if (initialized)
+    if (!initialized)
     {
         initialized = true;
         srand(time(0));
