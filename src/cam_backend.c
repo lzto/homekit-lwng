@@ -8,6 +8,8 @@
 
 #include <pthread.h>
 
+#include <cJSON.h>
+
 #include "cam_backend.h"
 #include "debug.h"
 #include "port.h"
@@ -68,7 +70,7 @@ static char _ff_fps[] = "10";
 static char _ff_vssrc[16];
 static char _ff_vsrtp[128];
 static char _ff_url[1024];
-
+#if 0
 static char* ffmpeg_args[] = {
     ffmpeg_cmd_path,
     "-f", "video4linux2",
@@ -84,11 +86,30 @@ static char* ffmpeg_args[] = {
     "-srtp_out_params", _ff_vsrtp, _ff_url,
     NULL
 };
-
+#else
+static char* ffmpeg_args[] = {
+    ffmpeg_cmd_path,
+    "-i", "http://127.0.0.1:7777/live",
+//    "-i", "/home/tong/homekit-lwng/build/vid.h264",
+//    "-i", "/home/tong/live.h264",
+    "-input_format", "h264",
+    "-video_size", _ff_video_size,
+    "-framerate", _ff_fps,
+//    "-vcodec", "h264_omx",
+    "-vcodec", "copy",
+    "-tune", "zerolatency",
+    "-copyts", "-an", "-payload_type", "99",
+    "-ssrc", _ff_vssrc,
+    "-f", "rtp",
+    "-srtp_out_suite", "AES_CM_128_HMAC_SHA1_80",
+    "-srtp_out_params", _ff_vsrtp, _ff_url,
+    NULL
+};
+#endif
 #define FF_SRTP_URL_TEMPLATE \
     "srtp://%s:%d?"\
     "rtcpport=%d&localrtcpport=%d&pkt_size=1378"
-
+#if 1
 void cam_start()
 {
     if (_cam_status!=CAM_INITIALIZED)
@@ -119,7 +140,6 @@ void cam_start()
         exit(0);
     }
 }
-
 void cam_kill()
 {
     if (_cam_status!=CAM_STARTED)
@@ -128,6 +148,41 @@ void cam_kill()
     cam_pid = 0;
     _cam_status = CAM_UNINITIALIZED;
 }
+
+
+#else
+//call camera_daemon to start streaming
+void cam_start()
+{
+    if (_cam_status!=CAM_INITIALIZED)
+        return;
+
+    base64_encode((uint8_t*)&vsrtp,sizeof(struct srtp_cfg), _ff_vsrtp);
+
+    cJSON* srtp_cfg = cJSON_CreateObject();
+    cJSON* json_addr = cJSON_CreateString(controller_ip);
+    cJSON_AddItemToObject(srtp_cfg, "addr", json_addr);
+    cJSON* json_port = cJSON_CreateNumber(vrtp_port);
+    cJSON_AddItemToObject(srtp_cfg, "port", json_port);
+    cJSON* json_ssrc = cJSON_CreateNumber(vssrc);
+    cJSON_AddItemToObject(srtp_cfg, "ssrc", json_ssrc);
+    cJSON* json_key = cJSON_CreateString(_ff_vsrtp);
+    cJSON_AddItemToObject(srtp_cfg, "key", json_key);
+
+    char* str = cJSON_Print(srtp_cfg);
+    FILE* cfg = fopen("/tmp/srtp_cfg.json", "w");
+    fwrite(str, sizeof(uint8_t), strlen(str), cfg);
+    fclose(cfg);
+    cJSON_Delete(srtp_cfg);
+
+    system("curl -d \"@/tmp/srtp_cfg.json\" -X POST http://127.0.0.1:7777/srtp_cast_to");
+
+}
+void cam_kill()
+{
+    system("curl http://127.0.0.1:7777/stop_srtp");
+}
+#endif
 
 uint8_t cam_status()
 {

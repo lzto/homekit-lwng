@@ -24,12 +24,14 @@ void led_identify(homekit_value_t _value) {
 char* handle_resource(const char *body, size_t body_size)
 {
     printf("handle resource : %s\n", body);
+#if 0
     char buffer[128];
     int w,h;
     sscanf(body, "{\"image-width\":%d,\"image-height\":%d,\"resource-type\":\"image\"}", &w, &h);
     snprintf(buffer,128,
             "/opt/vc/bin/raspistill -w %d -h %d -o /tmp/snapshot.jpg", w, h);
     system(buffer);
+#endif
     return "/tmp/snapshot.jpg\0";
 }
 
@@ -475,8 +477,8 @@ homekit_accessory_t *accessories[] = {
 
 homekit_server_config_t config = {
     .accessories = accessories,
-    .password = "111-22-333",
-    .setupId="8086",
+    .password = "123-45-678",
+    .setupId="8087",
     .on_resource = handle_resource
 };
 
