@@ -31,6 +31,9 @@ char* handle_resource(const char *body, size_t body_size)
     snprintf(buffer,128,
             "/opt/vc/bin/raspistill -w %d -h %d -o /tmp/snapshot.jpg", w, h);
     system(buffer);
+#else
+    system("rm /tmp/snapshot.jpg");
+    system("curl http://127.0.0.1:7777/snapshot -o /tmp/snapshot.jpg");
 #endif
     return "/tmp/snapshot.jpg\0";
 }
