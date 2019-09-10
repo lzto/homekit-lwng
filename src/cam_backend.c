@@ -89,13 +89,11 @@ static char* ffmpeg_args[] = {
 #else
 static char* ffmpeg_args[] = {
     ffmpeg_cmd_path,
+    "-analyzeduration", "50",
     "-i", "http://127.0.0.1:7777/live",
-//    "-i", "/home/tong/homekit-lwng/build/vid.h264",
-//    "-i", "/home/tong/live.h264",
     "-input_format", "h264",
     "-video_size", _ff_video_size,
     "-framerate", _ff_fps,
-//    "-vcodec", "h264_omx",
     "-vcodec", "copy",
     "-tune", "zerolatency",
     "-copyts", "-an", "-payload_type", "99",

@@ -480,8 +480,8 @@ homekit_accessory_t *accessories[] = {
 
 homekit_server_config_t config = {
     .accessories = accessories,
-    .password = "123-45-678",
-    .setupId="8087",
+    .password = "111-22-333",
+    .setupId="8086",
     .on_resource = handle_resource
 };
 

@@ -264,7 +264,6 @@ retry:
 
         //DEBUG("Going back to sleep, for %d sec ...", tv.tv_sec);
         pthread_mutex_unlock(&mutex_reload);
-        sleep(tv.tv_sec);
     }
 
     close(sd);
