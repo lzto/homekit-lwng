@@ -2,7 +2,7 @@
 
 - port of https://github.com/maximkulkin/esp-homekit
 - super small memory footprint 
-- use together with camera-daemon
+- use together with camera-daemon https://github.com/lzto/camera-daemon
 
 # Generate QR code for pairing
 
